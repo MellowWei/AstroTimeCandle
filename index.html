@@ -16,31 +16,24 @@
             color: var(--aurora-white); scroll-behavior: smooth;
         }
         
-        /* 强制滚动对齐逻辑 */
-        .main-scroll-container {
-            height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; display: none;
-        }
-        section {
-            height: 100vh; width: 100%; scroll-snap-align: start;
-            display: flex; flex-direction: column; justify-content: center;
-            padding: 0 10%; position: relative;
-        }
-
+        /* 强制滚动对齐 */
+        .main-scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; display: none; }
+        section { height: 100vh; width: 100%; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: center; padding: 0 10%; position: relative; }
         #canvas-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
         
-        /* 14.0°C 初始入口协议 */
+        /* 初始入口屏 */
         #overlay-entry {
             position: fixed; inset: 0; background: var(--void-black);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 100; transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* 产品定义叠加层 (The Revelation Layer) */
+        /* 产品介绍层 */
         #product-intro {
             position: absolute; inset: 0; z-index: 50;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             background: radial-gradient(circle, rgba(26,28,32,0.2) 0%, rgba(26,28,32,0.8) 100%);
-            backdrop-filter: blur(10px); opacity: 0; pointer-events: none;
+            backdrop-filter: blur(8px); opacity: 0; pointer-events: none;
             transition: opacity 1s ease 0.5s;
         }
 
@@ -50,24 +43,17 @@
             transition: all 0.4s; text-transform: uppercase; margin: 10px;
         }
         .btn:hover { background: var(--awake-blue); color: var(--void-black); box-shadow: 0 0 30px var(--awake-blue); }
-        .btn-minimal { border: none; opacity: 0.5; font-size: 9px; }
 
         .intro-content { max-width: 550px; text-align: center; }
-        .intro-content h1 { font-size: 24px; letter-spacing: 0.8em; margin-bottom: 20px; color: var(--awake-blue); font-weight: 300; }
-        .intro-content p { font-size: 13px; line-height: 2; opacity: 0.8; margin-bottom: 30px; letter-spacing: 0.1em; }
+        .intro-content h1 { font-size: 24px; letter-spacing: 0.8em; margin-bottom: 20px; color: var(--awake-blue); }
 
-        /* UI 文字标识 */
+        /* UI 文字 */
         .ui-text { position: absolute; left: 40px; mix-blend-mode: exclusion; pointer-events: none; z-index: 10; }
         .mellow-title { top: 40px; color: var(--awake-blue); font-size: 14px; letter-spacing: 0.6em; text-transform: uppercase; }
         .mellow-sub { bottom: 40px; color: var(--aurora-white); font-size: 9px; opacity: 0.5; letter-spacing: 0.3em; }
 
-        /* 叙事详情屏样式 */
-        .narrative-section { background: transparent; z-index: 5; pointer-events: none; }
-        .narrative-box { max-width: 500px; pointer-events: auto; background: rgba(26,28,32,0.4); padding: 40px; border-left: 1px solid var(--awake-blue); }
-        .narrative-section h3 { color: var(--awake-blue); font-size: 18px; letter-spacing: 0.4em; margin-bottom: 20px; }
-        .narrative-section p { font-size: 14px; opacity: 0.7; line-height: 1.8; }
-
-        /* 724Hz 质感光标 */
+        .narrative-box { max-width: 500px; pointer-events: auto; border-left: 1px solid var(--awake-blue); padding-left: 30px; }
+        
         #custom-cursor {
             width: 8px; height: 8px; background: var(--awake-blue); border-radius: 50%;
             position: fixed; pointer-events: none; z-index: 10000;
@@ -83,48 +69,32 @@
     <div id="overlay-entry">
         <div style="margin-bottom: 30px; width: 1px; height: 60px; background: var(--awake-blue); opacity: 0.4;"></div>
         <button id="enter-btn" class="btn">ENTER 724Hz</button>
+        <p id="status-text" style="margin-top:20px; font-size:9px; letter-spacing:0.2em; opacity:0.3;">CALIBRATING FREQUENCY...</p>
     </div>
 
     <div class="main-scroll-container" id="scroller">
-        
         <section>
             <div id="product-intro">
                 <div class="intro-content">
                     <h1>Astro Time Candle</h1>
-                    <div style="color: var(--awake-blue); margin-bottom: 15px; font-size: 10px; letter-spacing: 0.4em;">TIME, REVEALED — NOT COUNTED.</div>
-                    <p>A physical candle that replaces digital timers and transforms time into a visible, calming experience.</p>
-                    <div style="display: flex; justify-content: center;">
-                        <button class="btn" onclick="document.getElementById('how-it-works').scrollIntoView()">Learn More</button>
-                        <button class="btn btn-minimal" id="skip-btn">Skip Immersion</button>
-                    </div>
+                    <p style="font-size:13px; opacity:0.8; line-height:2; margin-bottom:30px; letter-spacing:0.1em;">
+                        A physical candle that replaces digital timers and transforms time into a visible, calming experience.
+                    </p>
+                    <button class="btn" onclick="document.getElementById('how-it-works').scrollIntoView()">Learn More</button>
+                    <button class="btn" style="border:none; font-size:9px; opacity:0.5;" id="skip-btn">Skip</button>
                 </div>
             </div>
         </section>
-
-        <section class="narrative-section" id="how-it-works">
+        <section id="how-it-works">
             <div class="narrative-box">
-                <h3>01 / The Unfolding</h3>
-                <p>As the outer layer melts, a stable inner core is revealed. Time doesn’t feel like something you lose; it feels like something that unfolds.</p>
-            </div>
-        </section>
-
-        <section class="narrative-section">
-            <div class="narrative-box">
-                <h3>02 / The Friction</h3>
-                <p>Standard countdowns create subtle anxiety. Constant checking splits your focus. We provide a quiet, physical weight of time passing, freeing you from the digital pulse.</p>
-            </div>
-        </section>
-
-        <section class="narrative-section">
-            <div class="narrative-box">
-                <h3>03 / The Ritual</h3>
-                <p>Light it before you focus. No alarms, no tracking. Just absolute presence in a 14.0°C environment. Architected for students who seek depth over performance.</p>
+                <h3 style="color:var(--awake-blue); letter-spacing:0.4em; margin-bottom:20px;">01 / The Unfolding</h3>
+                <p style="font-size:14px; opacity:0.7; line-height:1.8;">As the outer layer melts, a stable inner core is revealed. Time doesn’t feel like something you lose; it feels like something that unfolds.</p>
             </div>
         </section>
     </div>
 
     <div class="ui-text mellow-title">Astro Time Candle</div>
-    <div class="ui-text mellow-sub">Variable S Active / 14.0°C / Philadelphia / Architect: Wei Jueran</div>
+    <div class="ui-text mellow-sub">Architect: Wei Jueran | Philadelphia | 14.0°C</div>
 
     <script type="importmap">
         { "imports": { "three": "https://unpkg.com/three@0.161.0/build/three.module.js" } }
@@ -140,88 +110,83 @@
         const skipBtn = document.getElementById('skip-btn');
         const scroller = document.getElementById('scroller');
         const cursor = document.getElementById('custom-cursor');
+        const statusText = document.getElementById('status-text');
 
         let scene, camera, renderer, candle, particles, analyser, sound;
         let isStarted = false;
 
-        // 724Hz 光标逻辑
         window.addEventListener('mousemove', (e) => {
             cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
         });
 
         function init() {
-            try {
-                scene = new THREE.Scene();
-                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                camera.position.z = 5;
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
 
-                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.setPixelRatio(window.devicePixelRatio);
-                container.appendChild(renderer.domElement);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
 
-                // 蜡烛感质：#83B3BE (Awake Mellow Blue)
-                const candleGeo = new THREE.CylinderGeometry(1, 1, 3, 64);
-                const candleMat = new THREE.MeshPhysicalMaterial({
-                    color: 0x83B3BE, transmission: 0.85, roughness: 0.14,
-                    thickness: 2, attenuationColor: 0x4A5B61, attenuationDistance: 0.6,
-                    emissive: 0x83B3BE, emissiveIntensity: 0.1
-                });
-                candle = new THREE.Mesh(candleGeo, candleMat);
-                scene.add(candle);
+            const candleGeo = new THREE.CylinderGeometry(1, 1, 3, 64);
+            const candleMat = new THREE.MeshPhysicalMaterial({
+                color: 0x83B3BE, transmission: 0.85, roughness: 0.14,
+                thickness: 2, attenuationColor: 0x4A5B61, attenuationDistance: 0.6,
+                emissive: 0x83B3BE, emissiveIntensity: 0.1
+            });
+            candle = new THREE.Mesh(candleGeo, candleMat);
+            scene.add(candle);
 
-                // 时间粒子系统
-                const partGeo = new THREE.BufferGeometry();
-                const pos = new Float32Array(724 * 3);
-                for(let i=0; i<724*3; i++) pos[i] = (Math.random()-0.5)*12;
-                partGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-                particles = new THREE.Points(partGeo, new THREE.PointsMaterial({ color: 0xF2F2F2, size: 0.04, transparent: true, opacity: 0.4 }));
-                scene.add(particles);
+            const partGeo = new THREE.BufferGeometry();
+            const pos = new Float32Array(724 * 3);
+            for(let i=0; i<724*3; i++) pos[i] = (Math.random()-0.5)*12;
+            partGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            particles = new THREE.Points(partGeo, new THREE.PointsMaterial({ color: 0xF2F2F2, size: 0.04, transparent: true, opacity: 0.4 }));
+            scene.add(particles);
 
-                // 音频增益锁定 (3.0x Gain Override)
-                const listener = new THREE.AudioListener();
-                camera.add(listener);
-                sound = new THREE.Audio(listener);
-                
-                const gainNode = listener.context.createGain();
-                gainNode.gain.setValueAtTime(3.0, listener.context.currentTime); 
-                sound.setNodeSource(gainNode);
+            // 音频强制增益 300%
+            const listener = new THREE.AudioListener();
+            camera.add(listener);
+            sound = new THREE.Audio(listener);
+            
+            const gainNode = listener.context.createGain();
+            gainNode.gain.setValueAtTime(3.0, listener.context.currentTime); 
+            sound.setNodeSource(gainNode);
 
-                const audioLoader = new THREE.AudioLoader();
-                // 确保文件名为全小写 winter_sun.m4a
-                audioLoader.load('winter_sun.m4a', (buffer) => {
-                    sound.setBuffer(buffer);
-                    sound.setLoop(true);
-                    sound.setVolume(1.0); 
-                }, undefined, (err) => {
-                    console.error("[724Hz] 音频加载失败，请检查文件路径及大小写", err);
-                });
-                analyser = new THREE.AudioAnalyser(sound, 32);
+            const audioLoader = new THREE.AudioLoader();
+            // 【检查点】确保 winter_sun.m4a 在根目录且文件名全小写
+            audioLoader.load('winter_sun.m4a', (buffer) => {
+                sound.setBuffer(buffer);
+                sound.setLoop(true);
+                sound.setVolume(1.0);
+                statusText.innerText = "724Hz FREQUENCY ALIGNED.";
+                statusText.style.color = "#83B3BE";
+            }, undefined, (err) => {
+                statusText.innerText = "AUDIO SYNC FAILED. CHECK FILENAME.";
+                statusText.style.color = "#FF4444";
+            });
 
-                animate();
-            } catch (e) { console.error("[724Hz] Matrix Error:", e); }
+            analyser = new THREE.AudioAnalyser(sound, 32);
+            animate();
         }
 
         function animate() {
             requestAnimationFrame(animate);
-            candle.rotation.y += 0.00724; // 724Hz 频率锁定
-            particles.rotation.y -= 0.00427; // 427Hz 频率对齐
-            
+            candle.rotation.y += 0.00724;
+            particles.rotation.y -= 0.00427;
             if (isStarted && analyser) {
                 const freq = analyser.getAverageFrequency();
-                // 雾蓝随 winter_sun 波形产生视觉坍缩
                 candle.material.emissiveIntensity = 0.1 + (freq / 110);
-                particles.position.y = Math.sin(Date.now()*0.001) * (freq/140);
             }
             renderer.render(scene, camera);
         }
 
-        // 核心交互：主权唤醒与声音强制开启
         enterBtn.addEventListener('click', () => {
             isStarted = true;
-            scroller.style.display = 'block'; 
+            scroller.style.display = 'block';
             
-            // 暴力唤醒 AudioContext
+            // 暴力唤醒：浏览器必须在用户点击的回调里激活 Audio
             if (THREE.AudioContext.getContext().state === 'suspended') {
                 THREE.AudioContext.getContext().resume().then(() => {
                     if (sound && sound.buffer) sound.play();
@@ -238,16 +203,7 @@
             }, 1200);
         });
 
-        skipBtn.addEventListener('click', () => {
-            intro.style.opacity = '0';
-            intro.style.pointerEvents = 'none';
-        });
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        skipBtn.addEventListener('click', () => { intro.style.opacity = '0'; intro.style.pointerEvents = 'none'; });
 
         init();
     </script>
