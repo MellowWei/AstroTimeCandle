@@ -60,7 +60,7 @@
     <div id="overlay-entry">
         <div style="margin-bottom: 30px; width: 1px; height: 60px; background: var(--awake-blue); opacity: 0.4;"></div>
         <button id="enter-btn" class="btn">ENTER 724Hz</button>
-        <p id="status-text" style="margin-top:20px; font-size:9px; letter-spacing:0.2em; opacity:0.3;">CALIBRATING FREQUENCY...</p>
+        <p id="status-text" style="margin-top:20px; font-size:9px; letter-spacing:0.2em; opacity:0.3;">CALIBRATING SOURCE...</p>
     </div>
 
     <div class="main-scroll-container" id="scroller">
@@ -113,7 +113,7 @@
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 5;
+            camera.position.set(0, 0, 5);
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -141,15 +141,20 @@
             sound.setNodeSource(gainNode);
 
             const audioLoader = new THREE.AudioLoader();
-            audioLoader.load('winter_sun.m4a', (buffer) => {
+            // 【主权对齐】使用绝对路径，彻底粉碎路径噪音
+            const audioSrc = 'https://mellowwei.github.io/AstroTimeCandle/winter_sun.m4a';
+            
+            audioLoader.load(audioSrc, (buffer) => {
                 sound.setBuffer(buffer);
                 sound.setLoop(true);
                 sound.setVolume(1.0);
-                statusText.innerText = "724Hz FREQUENCY ALIGNED.";
+                statusText.innerText = "SOURCE ALIGNED. READY TO AWAKE.";
                 statusText.style.color = "#83B3BE";
+                console.log("[724Hz] winter_sun.m4a 绝对路径载入成功");
             }, undefined, (err) => {
-                statusText.innerText = "AUDIO SYNC FAILED. CHECK FILENAME.";
+                statusText.innerText = "SOURCE BLOCKED. CHECK CONNECTION.";
                 statusText.style.color = "#FF4444";
+                console.error("[724Hz] 音频载入崩溃:", err);
             });
 
             analyser = new THREE.AudioAnalyser(sound, 32);
@@ -171,7 +176,6 @@
             isStarted = true;
             scroller.style.display = 'block';
             
-            // 核心修复：确保在 Click 事件内部唤醒 AudioContext
             const context = THREE.AudioContext.getContext();
             if (context.state === 'suspended') {
                 context.resume().then(() => {
@@ -190,6 +194,11 @@
         });
 
         skipBtn.addEventListener('click', () => { intro.style.opacity = '0'; intro.style.pointerEvents = 'none'; });
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
 
         init();
     </script>
