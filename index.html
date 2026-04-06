@@ -5,51 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ASTRO AWAKE | 724Hz Sovereign</title>
     <style>
-        :root {
-            --awake-blue: #83B3BE; --slate-deep: #4A5B61;
-            --aurora-white: #F2F2F2; --void-black: #1A1C20;
-        }
+        :root { --awake-blue: #83B3BE; --slate-deep: #4A5B61; --aurora-white: #F2F2F2; --void-black: #1A1C20; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { 
-            width: 100%; background: var(--void-black); 
-            font-family: 'Inter', sans-serif; cursor: none;
-            color: var(--aurora-white); scroll-behavior: smooth;
-        }
-        
-        .main-scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; display: none; }
-        section { height: 100vh; width: 100%; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: center; padding: 0 10%; position: relative; }
+        body, html { width: 100%; background: var(--void-black); font-family: 'Inter', sans-serif; cursor: none; color: var(--aurora-white); scroll-behavior: smooth; }
         #canvas-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-        
-        #overlay-entry {
-            position: fixed; inset: 0; background: var(--void-black);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 100; transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        #product-intro {
-            position: absolute; inset: 0; z-index: 50;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: radial-gradient(circle, rgba(26,28,32,0.2) 0%, rgba(26,28,32,0.8) 100%);
-            backdrop-filter: blur(8px); opacity: 0; pointer-events: none;
-            transition: opacity 1s ease 0.5s;
-        }
-
-        .btn {
-            padding: 12px 40px; border: 1px solid var(--awake-blue); color: var(--awake-blue);
-            background: transparent; font-size: 11px; letter-spacing: 0.5em; cursor: pointer;
-            transition: all 0.4s; text-transform: uppercase; margin: 10px;
-        }
+        #overlay-entry { position: fixed; inset: 0; background: var(--void-black); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn { padding: 12px 40px; border: 1px solid var(--awake-blue); color: var(--awake-blue); background: transparent; font-size: 11px; letter-spacing: 0.5em; cursor: pointer; transition: all 0.4s; text-transform: uppercase; }
         .btn:hover { background: var(--awake-blue); color: var(--void-black); box-shadow: 0 0 30px var(--awake-blue); }
-
-        .ui-text { position: absolute; left: 40px; mix-blend-mode: exclusion; pointer-events: none; z-index: 10; }
-        .mellow-title { top: 40px; color: var(--awake-blue); font-size: 14px; letter-spacing: 0.6em; text-transform: uppercase; }
-        .mellow-sub { bottom: 40px; color: var(--aurora-white); font-size: 9px; opacity: 0.5; letter-spacing: 0.3em; }
-
-        #custom-cursor {
-            width: 8px; height: 8px; background: var(--awake-blue); border-radius: 50%;
-            position: fixed; pointer-events: none; z-index: 10000;
-            filter: blur(1px); transition: transform 0.1s linear; opacity: 0.8;
-        }
+        #custom-cursor { width: 8px; height: 8px; background: var(--awake-blue); border-radius: 50%; position: fixed; pointer-events: none; z-index: 10000; filter: blur(1px); transition: transform 0.1s linear; opacity: 0.8; }
+        .status { margin-top: 20px; font-size: 9px; letter-spacing: 0.2em; opacity: 0.5; transition: color 0.3s; }
     </style>
 </head>
 <body>
@@ -60,32 +24,8 @@
     <div id="overlay-entry">
         <div style="margin-bottom: 30px; width: 1px; height: 60px; background: var(--awake-blue); opacity: 0.4;"></div>
         <button id="enter-btn" class="btn">ENTER 724Hz</button>
-        <p id="status-text" style="margin-top:20px; font-size:9px; letter-spacing:0.2em; opacity:0.3;">CALIBRATING SOURCE...</p>
+        <p id="status-text" class="status">INITIALIZING FREQUENCY...</p>
     </div>
-
-    <div class="main-scroll-container" id="scroller">
-        <section>
-            <div id="product-intro">
-                <div style="max-width: 550px; text-align: center;">
-                    <h1 style="font-size: 24px; letter-spacing: 0.8em; margin-bottom: 20px; color: var(--awake-blue);">Astro Time Candle</h1>
-                    <p style="font-size:13px; opacity:0.8; line-height:2; margin-bottom:30px; letter-spacing:0.1em;">
-                        A physical candle that replaces digital timers and transforms time into a visible, calming experience.
-                    </p>
-                    <button class="btn" onclick="document.getElementById('how-it-works').scrollIntoView()">Learn More</button>
-                    <button class="btn" style="border:none; font-size:9px; opacity:0.5;" id="skip-btn">Skip</button>
-                </div>
-            </div>
-        </section>
-        <section id="how-it-works">
-            <div style="max-width: 500px; border-left: 1px solid var(--awake-blue); padding-left: 30px;">
-                <h3 style="color:var(--awake-blue); letter-spacing:0.4em; margin-bottom:20px;">01 / The Unfolding</h3>
-                <p style="font-size:14px; opacity:0.7; line-height:1.8;">As the outer layer melts, a stable inner core is revealed. Time unfolds as a revelation.</p>
-            </div>
-        </section>
-    </div>
-
-    <div class="ui-text mellow-title">Astro Time Candle</div>
-    <div class="ui-text mellow-sub">Architect: Wei Jueran | Philadelphia | 14.0°C</div>
 
     <script type="importmap">
         { "imports": { "three": "https://unpkg.com/three@0.161.0/build/three.module.js" } }
@@ -94,16 +34,12 @@
     <script type="module">
         import * as THREE from 'three';
 
-        const container = document.getElementById('canvas-container');
         const entry = document.getElementById('overlay-entry');
-        const intro = document.getElementById('product-intro');
         const enterBtn = document.getElementById('enter-btn');
-        const skipBtn = document.getElementById('skip-btn');
-        const scroller = document.getElementById('scroller');
-        const cursor = document.getElementById('custom-cursor');
         const statusText = document.getElementById('status-text');
+        const cursor = document.getElementById('custom-cursor');
 
-        let scene, camera, renderer, candle, particles, analyser, sound;
+        let scene, camera, renderer, candle, particles, analyser, sound, audioBuffer;
         let isStarted = false;
 
         window.addEventListener('mousemove', (e) => {
@@ -113,13 +49,14 @@
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 0, 5);
+            camera.position.z = 5;
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
-            container.appendChild(renderer.domElement);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
 
+            // 蜡烛与粒子
             const candleGeo = new THREE.CylinderGeometry(1, 1, 3, 64);
             const candleMat = new THREE.MeshPhysicalMaterial({ color: 0x83B3BE, transmission: 0.85, roughness: 0.14, thickness: 2, emissive: 0x83B3BE, emissiveIntensity: 0.1 });
             candle = new THREE.Mesh(candleGeo, candleMat);
@@ -132,29 +69,25 @@
             particles = new THREE.Points(partGeo, new THREE.PointsMaterial({ color: 0xF2F2F2, size: 0.04, transparent: true, opacity: 0.4 }));
             scene.add(particles);
 
+            // 音频设置
             const listener = new THREE.AudioListener();
             camera.add(listener);
             sound = new THREE.Audio(listener);
-            
             const gainNode = listener.context.createGain();
-            gainNode.gain.setValueAtTime(3.0, listener.context.currentTime); 
+            gainNode.gain.setValueAtTime(4.0, listener.context.currentTime); // 再次加强增益
             sound.setNodeSource(gainNode);
 
             const audioLoader = new THREE.AudioLoader();
-            // 【主权对齐】使用绝对路径，彻底粉碎路径噪音
-            const audioSrc = 'https://mellowwei.github.io/AstroTimeCandle/winter_sun.m4a';
-            
-            audioLoader.load(audioSrc, (buffer) => {
+            // 相对路径，确保 winter_sun.m4a 在根目录
+            audioLoader.load('./winter_sun.m4a', (buffer) => {
+                audioBuffer = buffer;
                 sound.setBuffer(buffer);
                 sound.setLoop(true);
-                sound.setVolume(1.0);
-                statusText.innerText = "SOURCE ALIGNED. READY TO AWAKE.";
+                statusText.innerText = "724Hz ALIGNED. READY TO AWAKE.";
                 statusText.style.color = "#83B3BE";
-                console.log("[724Hz] winter_sun.m4a 绝对路径载入成功");
             }, undefined, (err) => {
-                statusText.innerText = "SOURCE BLOCKED. CHECK CONNECTION.";
+                statusText.innerText = "AUDIO LOAD ERROR. CHECK FILENAME.";
                 statusText.style.color = "#FF4444";
-                console.error("[724Hz] 音频载入崩溃:", err);
             });
 
             analyser = new THREE.AudioAnalyser(sound, 32);
@@ -167,40 +100,33 @@
             particles.rotation.y -= 0.00427;
             if (isStarted && analyser) {
                 const freq = analyser.getAverageFrequency();
-                candle.material.emissiveIntensity = 0.1 + (freq / 110);
+                candle.material.emissiveIntensity = 0.1 + (freq / 100);
             }
             renderer.render(scene, camera);
         }
 
         enterBtn.addEventListener('click', () => {
-            isStarted = true;
-            scroller.style.display = 'block';
-            
+            console.log("Attempting to start audio...");
             const context = THREE.AudioContext.getContext();
-            if (context.state === 'suspended') {
-                context.resume().then(() => {
-                    if (sound && sound.buffer) sound.play();
-                });
-            } else {
-                if (sound && sound.buffer) sound.play();
-            }
-
-            entry.style.opacity = '0';
-            setTimeout(() => {
-                entry.remove();
-                intro.style.opacity = '1';
-                intro.style.pointerEvents = 'auto';
-            }, 1200);
+            
+            // 暴力重启 Context
+            context.resume().then(() => {
+                isStarted = true;
+                if (audioBuffer) {
+                    sound.play();
+                    console.log("Audio playing");
+                }
+                entry.style.opacity = '0';
+                setTimeout(() => entry.remove(), 1200);
+            });
         });
 
-        skipBtn.addEventListener('click', () => { intro.style.opacity = '0'; intro.style.pointerEvents = 'none'; });
+        init();
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-
-        init();
     </script>
 </body>
 </html>
