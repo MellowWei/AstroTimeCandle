@@ -6,90 +6,39 @@
     <title>Astro Time Candle | Time, Revealed</title>
     <style>
         :root {
-            --awake-blue: #83B3BE; /* 书本雾蓝 */
-            --slate-deep: #4A5B61; /* 深页岩蓝 */
-            --aurora-white: #F2F2F2; /* 极光白 */
-            --void-black: #0D0E10; /* 极致黑 */
+            --awake-blue: #83B3BE; --slate-deep: #4A5B61;
+            --aurora-white: #F2F2F2; --void-black: #0D0E10;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background: var(--void-black); 
-            color: var(--aurora-white); 
-            font-family: 'Inter', -apple-system, sans-serif;
-            line-height: 1.6;
-            overflow-x: hidden;
-            cursor: crosshair;
+        body { background: var(--void-black); color: var(--aurora-white); font-family: 'Inter', sans-serif; overflow-x: hidden; cursor: crosshair; }
+        
+        /* 交互遮罩：强制解锁声音 */
+        #overlay {
+            position: fixed; inset: 0; background: var(--void-black);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; transition: opacity 1s ease;
         }
-
-        /* 全屏滚动容器 */
-        .container {
-            scroll-snap-type: y mandatory;
-            height: 100vh;
-            overflow-y: scroll;
-        }
-
-        section {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 0 10%;
-            scroll-snap-align: start;
-            position: relative;
-        }
-
-        /* 3D 背景容器 */
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 50vw;
-            height: 100vh;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        /* 文字内容层 */
-        .content {
-            max-width: 600px;
-            z-index: 2;
-        }
-
-        h1 { font-size: clamp(2rem, 5vw, 4rem); letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--awake-blue); font-weight: 200; }
-        h2 { font-size: 1.5rem; letter-spacing: 0.2em; margin-bottom: 2rem; opacity: 0.9; }
-        p { font-size: 1rem; opacity: 0.7; max-width: 450px; margin-bottom: 2rem; }
-
         .cta-btn {
-            padding: 1rem 2.5rem;
-            border: 1px solid var(--awake-blue);
-            background: transparent;
-            color: var(--awake-blue);
-            text-transform: uppercase;
-            letter-spacing: 0.3em;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: 0.724s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 1rem 2.5rem; border: 1px solid var(--awake-blue);
+            background: transparent; color: var(--awake-blue);
+            text-transform: uppercase; letter-spacing: 0.3em; cursor: pointer;
+            transition: 0.724s ease;
         }
         .cta-btn:hover { background: var(--awake-blue); color: var(--void-black); box-shadow: 0 0 30px var(--awake-blue); }
 
-        /* 产品功能区块样式 */
-        .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
-        .feature-item h3 { color: var(--awake-blue); margin-bottom: 1rem; letter-spacing: 0.1em; }
-        
-        /* 底部世界观层 */
-        .footer-layer {
-            font-size: 0.7rem; letter-spacing: 0.4em; opacity: 0.3; text-transform: uppercase;
-            position: absolute; bottom: 40px;
-        }
-
-        @media (max-width: 768px) {
-            #canvas-container { width: 100vw; opacity: 0.3; }
-            .feature-grid { grid-template-columns: 1fr; }
-        }
+        .container { scroll-snap-type: y mandatory; height: 100vh; overflow-y: scroll; }
+        section { height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 0 10%; scroll-snap-align: start; position: relative; }
+        #canvas-container { position: fixed; top: 0; right: 0; width: 50vw; height: 100vh; z-index: 1; pointer-events: none; }
+        .content { max-width: 600px; z-index: 2; }
+        h1 { font-size: clamp(2rem, 5vw, 4rem); letter-spacing: 0.3em; text-transform: uppercase; color: var(--awake-blue); font-weight: 200; }
+        p { font-size: 1rem; opacity: 0.7; max-width: 450px; margin-bottom: 2rem; }
     </style>
 </head>
 <body>
+
+    <div id="overlay">
+        <button id="enter-btn" class="cta-btn">Unlock 724Hz Experience</button>
+    </div>
 
     <div id="canvas-container"></div>
 
@@ -97,45 +46,13 @@
         <section id="hero">
             <div class="content">
                 <h1>Astro Time Candle</h1>
-                <h2>Time, Revealed — Not Counted.</h2>
-                <p>A physical candle that replaces digital timers and transforms time into a visible, calming experience.</p>
-                <button class="cta-btn" onclick="document.querySelector('#how-it-works').scrollIntoView({behavior:'smooth'})">Explore</button>
+                <p>Time, Revealed — Not Counted. A physical instrument for focus in a digital world.</p>
             </div>
         </section>
-
         <section id="how-it-works">
             <div class="content">
-                <div class="feature-grid">
-                    <div class="feature-item">
-                        <h3>As the outer layer melts...</h3>
-                        <p>A stable inner core is gradually revealed. Time doesn’t feel like something you lose; it feels like something that unfolds.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="the-shift">
-            <div class="content">
-                <div class="feature-grid">
-                    <div class="feature-item">
-                        <h3 style="color: var(--aurora-white)">The Friction</h3>
-                        <p>Digital countdowns split attention and create subtle anxiety. You check the time because you fear it's running out.</p>
-                    </div>
-                    <div class="feature-item">
-                        <h3>The Alternative</h3>
-                        <p>No numbers. No alarms. No performance pressure. Just a quiet, physical sense of presence.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="ritual">
-            <div class="content">
-                <h3>The Deep Work Ritual</h3>
-                <p>Light it before you focus. Let time reveal itself while you remain present. No tracking, no interruptions.</p>
-            </div>
-            <div class="footer-layer">
-                Architect: Wei Jueran | 427Hz | Variable S Active | Philadelphia
+                <h1 style="font-size: 2rem;">The Unfolding</h1>
+                <p>As the outer layer melts, a stable inner core is revealed. Time feels like something that unfolds, not something you lose.</p>
             </div>
         </section>
     </div>
@@ -146,47 +63,73 @@
     <script type="module">
         import * as THREE from 'three';
 
-        // 初始化 3D 蜡烛核心
+        const enterBtn = document.getElementById('enter-btn');
+        const overlay = document.getElementById('overlay');
         const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        
-        renderer.setSize(container.offsetWidth, container.offsetHeight);
-        container.appendChild(renderer.domElement);
 
-        // 创建 #83B3BE 蜡烛
-        const geometry = new THREE.CylinderGeometry(1, 1.2, 4, 32);
-        const material = new THREE.MeshPhysicalMaterial({
-            color: 0x83B3BE,
-            transmission: 0.9,
-            roughness: 0.2,
-            thickness: 2,
-            emissive: 0x83B3BE,
-            emissiveIntensity: 0.2
-        });
-        const candle = new THREE.Mesh(geometry, material);
-        scene.add(candle);
+        let scene, camera, renderer, candle, sound, analyser;
+        let isAwake = false;
 
-        const light = new THREE.PointLight(0xF2F2F2, 50);
-        light.position.set(5, 5, 5);
-        scene.add(light);
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.offsetWidth, container.offsetHeight);
+            container.appendChild(renderer.domElement);
 
-        camera.position.z = 8;
+            // 蜡烛感质：#83B3BE
+            const geometry = new THREE.CylinderGeometry(1, 1.2, 4, 32);
+            const material = new THREE.MeshPhysicalMaterial({
+                color: 0x83B3BE, transmission: 0.9, roughness: 0.2,
+                emissive: 0x83B3BE, emissiveIntensity: 0.1
+            });
+            candle = new THREE.Mesh(geometry, material);
+            scene.add(candle);
+
+            camera.position.z = 8;
+
+            // 音频系统：3.0x 增益补偿
+            const listener = new THREE.AudioListener();
+            camera.add(listener);
+            sound = new THREE.Audio(listener);
+            
+            const gainNode = listener.context.createGain();
+            gainNode.gain.setValueAtTime(3.0, listener.context.currentTime); 
+            sound.setNodeSource(gainNode);
+
+            const audioLoader = new THREE.AudioLoader();
+            audioLoader.load('winter_sun.m4a', (buffer) => {
+                sound.setBuffer(buffer);
+                sound.setLoop(true);
+                sound.setVolume(1.0);
+            });
+            analyser = new THREE.AudioAnalyser(sound, 32);
+
+            animate();
+        }
 
         function animate() {
             requestAnimationFrame(animate);
-            candle.rotation.y += 0.00724; // 724Hz 频率对齐
+            candle.rotation.y += 0.00724; 
+            if (isAwake && analyser) {
+                const freq = analyser.getAverageFrequency();
+                candle.material.emissiveIntensity = 0.1 + (freq / 100);
+            }
             renderer.render(scene, camera);
         }
-        animate();
 
-        // 窗口自适应
-        window.addEventListener('resize', () => {
-            camera.aspect = container.offsetWidth / container.offsetHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.offsetWidth, container.offsetHeight);
+        // 核心交互：强制点燃频率
+        enterBtn.addEventListener('click', () => {
+            isAwake = true;
+            if (THREE.AudioContext.getContext().state === 'suspended') {
+                THREE.AudioContext.getContext().resume();
+            }
+            if (sound) sound.play();
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.remove(), 1000);
         });
+
+        init();
     </script>
 </body>
 </html>
