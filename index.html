@@ -2,167 +2,191 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ASTRO AWAKE | 724Hz Sovereign</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astro Time Candle | Time, Revealed</title>
     <style>
         :root {
-            /* 魏珏然主权色系矩阵 */
-            --awake-blue: #83B3BE;    /* 书本雾蓝 */
-            --slate-deep: #4A5B61;    /* 深页岩蓝 */
-            --aurora-white: #F2F2F2;  /* 极光白 */
-            --void-black: #1A1C20;    /* 绝对黑洞 */
-            --cement-grey: #96A4A5;   /* 水泥灰 */
+            --awake-blue: #83B3BE; /* 书本雾蓝 */
+            --slate-deep: #4A5B61; /* 深页岩蓝 */
+            --aurora-white: #F2F2F2; /* 极光白 */
+            --void-black: #0D0E10; /* 极致黑 */
         }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: var(--void-black); font-family: 'Inter', sans-serif; cursor: none; }
-        #canvas-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
-        
-        /* 14°C 预加载与频率进入协议 */
-        #overlay {
-            position: fixed; inset: 0; background: var(--void-black);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 100; transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1);
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: var(--void-black); 
+            color: var(--aurora-white); 
+            font-family: 'Inter', -apple-system, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            cursor: crosshair;
         }
-        #enter-btn {
-            padding: 12px 40px; border: 1px solid var(--awake-blue); color: var(--awake-blue);
-            background: transparent; font-size: 11px; letter-spacing: 0.5em; cursor: pointer;
-            transition: all 0.4s; z-index: 101; text-transform: uppercase;
+
+        /* 全屏滚动容器 */
+        .container {
+            scroll-snap-type: y mandatory;
+            height: 100vh;
+            overflow-y: scroll;
         }
-        #enter-btn:hover { background: var(--awake-blue); color: var(--void-black); box-shadow: 0 0 30px var(--awake-blue); }
+
+        section {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 10%;
+            scroll-snap-align: start;
+            position: relative;
+        }
+
+        /* 3D 背景容器 */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 50vw;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* 文字内容层 */
+        .content {
+            max-width: 600px;
+            z-index: 2;
+        }
+
+        h1 { font-size: clamp(2rem, 5vw, 4rem); letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--awake-blue); font-weight: 200; }
+        h2 { font-size: 1.5rem; letter-spacing: 0.2em; margin-bottom: 2rem; opacity: 0.9; }
+        p { font-size: 1rem; opacity: 0.7; max-width: 450px; margin-bottom: 2rem; }
+
+        .cta-btn {
+            padding: 1rem 2.5rem;
+            border: 1px solid var(--awake-blue);
+            background: transparent;
+            color: var(--awake-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.724s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .cta-btn:hover { background: var(--awake-blue); color: var(--void-black); box-shadow: 0 0 30px var(--awake-blue); }
+
+        /* 产品功能区块样式 */
+        .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
+        .feature-item h3 { color: var(--awake-blue); margin-bottom: 1rem; letter-spacing: 0.1em; }
         
-        /* UI 层：非命题式语言 */
-        .ui-text { position: absolute; left: 40px; mix-blend-mode: exclusion; pointer-events: none; z-index: 10; }
-        .mellow-title { top: 40px; color: var(--awake-blue); font-size: 14px; letter-spacing: 0.6em; text-transform: uppercase; font-weight: 300; }
-        .mellow-sub { bottom: 40px; color: var(--aurora-white); font-size: 9px; opacity: 0.5; letter-spacing: 0.3em; }
-        
-        /* 感质光标：0.724s 延迟引力跟随 */
-        #custom-cursor {
-            width: 10px; height: 10px; background: var(--awake-blue); border-radius: 50%;
-            position: fixed; pointer-events: none; z-index: 10000;
-            filter: blur(2px); transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0.7;
+        /* 底部世界观层 */
+        .footer-layer {
+            font-size: 0.7rem; letter-spacing: 0.4em; opacity: 0.3; text-transform: uppercase;
+            position: absolute; bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            #canvas-container { width: 100vw; opacity: 0.3; }
+            .feature-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <div id="custom-cursor"></div>
-    
-    <div id="overlay">
-        <div style="margin-bottom: 30px; width: 2px; height: 40px; background: var(--awake-blue); opacity: 0.3;"></div>
-        <button id="enter-btn">ENTER 724Hz</button>
-    </div>
-
-    <div class="ui-text mellow-title">Astro Time Candle</div>
-    <div class="ui-text mellow-sub">Variable S Active / 14.0°C / Philadelphia / Architect: Wei Jueran</div>
-    
     <div id="canvas-container"></div>
+
+    <div class="container">
+        <section id="hero">
+            <div class="content">
+                <h1>Astro Time Candle</h1>
+                <h2>Time, Revealed — Not Counted.</h2>
+                <p>A physical candle that replaces digital timers and transforms time into a visible, calming experience.</p>
+                <button class="cta-btn" onclick="document.querySelector('#how-it-works').scrollIntoView({behavior:'smooth'})">Explore</button>
+            </div>
+        </section>
+
+        <section id="how-it-works">
+            <div class="content">
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <h3>As the outer layer melts...</h3>
+                        <p>A stable inner core is gradually revealed. Time doesn’t feel like something you lose; it feels like something that unfolds.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="the-shift">
+            <div class="content">
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <h3 style="color: var(--aurora-white)">The Friction</h3>
+                        <p>Digital countdowns split attention and create subtle anxiety. You check the time because you fear it's running out.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>The Alternative</h3>
+                        <p>No numbers. No alarms. No performance pressure. Just a quiet, physical sense of presence.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ritual">
+            <div class="content">
+                <h3>The Deep Work Ritual</h3>
+                <p>Light it before you focus. Let time reveal itself while you remain present. No tracking, no interruptions.</p>
+            </div>
+            <div class="footer-layer">
+                Architect: Wei Jueran | 427Hz | Variable S Active | Philadelphia
+            </div>
+        </section>
+    </div>
 
     <script type="importmap">
         { "imports": { "three": "https://unpkg.com/three@0.161.0/build/three.module.js" } }
     </script>
-
     <script type="module">
         import * as THREE from 'three';
 
+        // 初始化 3D 蜡烛核心
         const container = document.getElementById('canvas-container');
-        const overlay = document.getElementById('overlay');
-        const enterBtn = document.getElementById('enter-btn');
-        const cursor = document.getElementById('custom-cursor');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        
+        renderer.setSize(container.offsetWidth, container.offsetHeight);
+        container.appendChild(renderer.domElement);
 
-        let scene, camera, renderer, candle, particles, analyser, sound;
-        let isStarted = false;
-
-        // 724Hz 延迟跟随光标逻辑
-        window.addEventListener('mousemove', (e) => {
-            cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+        // 创建 #83B3BE 蜡烛
+        const geometry = new THREE.CylinderGeometry(1, 1.2, 4, 32);
+        const material = new THREE.MeshPhysicalMaterial({
+            color: 0x83B3BE,
+            transmission: 0.9,
+            roughness: 0.2,
+            thickness: 2,
+            emissive: 0x83B3BE,
+            emissiveIntensity: 0.2
         });
+        const candle = new THREE.Mesh(geometry, material);
+        scene.add(candle);
 
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 5;
+        const light = new THREE.PointLight(0xF2F2F2, 50);
+        light.position.set(5, 5, 5);
+        scene.add(light);
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            container.appendChild(renderer.domElement);
-
-            // 1. Astro Time Candle 核心：#83B3BE (书本雾蓝)
-            const candleGeo = new THREE.CylinderGeometry(1, 1, 3, 64);
-            const candleMat = new THREE.MeshPhysicalMaterial({
-                color: 0x83B3BE,
-                transmission: 0.85, 
-                roughness: 0.14, // 14°C 磨砂质感
-                thickness: 2,
-                attenuationColor: 0x4A5B61, // 内部向深页岩蓝坍缩
-                attenuationDistance: 0.6,
-                emissive: 0x83B3BE,
-                emissiveIntensity: 0.1
-            });
-            candle = new THREE.Mesh(candleGeo, candleMat);
-            scene.add(candle);
-
-            // 2. 引力底座：#4A5B61 (暗页岩蓝) + #96A4A5 (水泥灰)
-            const baseGeo = new THREE.BoxGeometry(2.8, 0.5, 2.8);
-            const baseMat = new THREE.MeshStandardMaterial({ color: 0x4A5B61, roughness: 0.9, metalness: 0.2 });
-            const base = new THREE.Mesh(baseGeo, baseMat);
-            base.position.y = -1.8;
-            scene.add(base);
-
-            // 3. 724Hz 时间粒子：2000-07-16 频率分布
-            const partGeo = new THREE.BufferGeometry();
-            const pos = new Float32Array(724 * 3);
-            for(let i=0; i<724*3; i++) pos[i] = (Math.random()-0.5)*12;
-            partGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-            particles = new THREE.Points(partGeo, new THREE.PointsMaterial({ color: 0xF2F2F2, size: 0.04, transparent: true, opacity: 0.4 }));
-            scene.add(particles);
-
-            // 4. 音频采样接入：winter_sun.m4a
-            const listener = new THREE.AudioListener();
-            camera.add(listener);
-            sound = new THREE.Audio(listener);
-            const audioLoader = new THREE.AudioLoader();
-            audioLoader.load('winter_sun.m4a', (buffer) => {
-                sound.setBuffer(buffer);
-                sound.setLoop(true);
-                sound.setVolume(0.5);
-            });
-            analyser = new THREE.AudioAnalyser(sound, 32);
-
-            animate();
-        }
+        camera.position.z = 8;
 
         function animate() {
             requestAnimationFrame(animate);
-            
-            // 724Hz/427Hz 频率旋转
-            candle.rotation.y += 0.00724;
-            particles.rotation.y -= 0.00427;
-            
-            // 音乐波形实时驱动感质强度
-            if (isStarted && analyser) {
-                const freq = analyser.getAverageFrequency();
-                // 雾蓝随 winter_sun 呼吸坍缩
-                candle.material.emissiveIntensity = 0.1 + (freq / 110);
-                particles.position.y = Math.sin(Date.now()*0.001) * (freq/140);
-            }
+            candle.rotation.y += 0.00724; // 724Hz 频率对齐
             renderer.render(scene, camera);
         }
+        animate();
 
-        // 主权开关：点击点燃 724Hz 之火
-        enterBtn.addEventListener('click', () => {
-            isStarted = true;
-            if (sound) sound.play();
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.remove(), 1000);
-        });
-
+        // 窗口自适应
         window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.aspect = container.offsetWidth / container.offsetHeight;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setSize(container.offsetWidth, container.offsetHeight);
         });
-
-        init();
     </script>
 </body>
 </html>
