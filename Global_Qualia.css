@@ -1,0 +1,44 @@
+/* 724Hz 视觉主权协议 */
+:root {
+  --awake-blue: #83B3BE;     /* 书本雾蓝 */
+  --slate-deep: #4A5B61;     /* 深页岩蓝 */
+  --cement-grey: #96A4A5;    /* 水泥灰 */
+  --aurora-white: #F2F2F2;   /* 极光白 */
+  --oat-grey: #D9C5B2;       /* 燕麦灰 */
+  --void-black: #1A1C20;     /* 绝对黑洞 */
+}
+
+body {
+  margin: 0;
+  background-color: var(--void-black);
+  color: var(--aurora-white);
+  font-family: 'Inter', -apple-system, sans-serif;
+  overflow: hidden; /* 屏蔽滚动噪音 */
+  cursor: none;    /* 自定义引力光标 */
+}
+
+.canvas-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at center, var(--slate-deep) 0%, var(--void-black) 100%);
+}
+
+.ui-overlay {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  border-left: 1px solid var(--awake-blue);
+  padding-left: 20px;
+  mix-blend-mode: difference;
+}
+
+.mellow-text {
+  font-size: 10px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--awake-blue);
+  opacity: 0.7;
+}
