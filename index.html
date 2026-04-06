@@ -2,134 +2,125 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Astro Time Candle | Time, Revealed</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ASTRO AWAKE | 724Hz Sovereign</title>
     <style>
         :root {
             --awake-blue: #83B3BE; --slate-deep: #4A5B61;
-            --aurora-white: #F2F2F2; --void-black: #0D0E10;
+            --aurora-white: #F2F2F2; --void-black: #1A1C20;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--void-black); color: var(--aurora-white); font-family: 'Inter', sans-serif; overflow-x: hidden; cursor: crosshair; }
+        body, html { 
+            width: 100%; background: var(--void-black); 
+            font-family: 'Inter', sans-serif; cursor: none;
+            color: var(--aurora-white); scroll-behavior: smooth;
+        }
         
-        /* 交互遮罩：强制解锁声音 */
-        #overlay {
-            position: fixed; inset: 0; background: var(--void-black);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 1000; transition: opacity 1s ease;
+        /* 强制滚动对齐 */
+        .main-scroll-container {
+            height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory;
         }
-        .cta-btn {
-            padding: 1rem 2.5rem; border: 1px solid var(--awake-blue);
-            background: transparent; color: var(--awake-blue);
-            text-transform: uppercase; letter-spacing: 0.3em; cursor: pointer;
-            transition: 0.724s ease;
+        section {
+            height: 100vh; width: 100%; scroll-snap-align: start;
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 0 10%; position: relative;
         }
-        .cta-btn:hover { background: var(--awake-blue); color: var(--void-black); box-shadow: 0 0 30px var(--awake-blue); }
 
-        .container { scroll-snap-type: y mandatory; height: 100vh; overflow-y: scroll; }
-        section { height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 0 10%; scroll-snap-align: start; position: relative; }
-        #canvas-container { position: fixed; top: 0; right: 0; width: 50vw; height: 100vh; z-index: 1; pointer-events: none; }
-        .content { max-width: 600px; z-index: 2; }
-        h1 { font-size: clamp(2rem, 5vw, 4rem); letter-spacing: 0.3em; text-transform: uppercase; color: var(--awake-blue); font-weight: 200; }
-        p { font-size: 1rem; opacity: 0.7; max-width: 450px; margin-bottom: 2rem; }
+        #canvas-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+        
+        /* 初始入口 */
+        #overlay-entry {
+            position: fixed; inset: 0; background: var(--void-black);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 进入后的产品定义层 (Centered Overlay) */
+        #product-definition {
+            position: absolute; inset: 0; z-index: 50;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: radial-gradient(circle, rgba(26,28,32,0.4) 0%, rgba(26,28,32,0.9) 100%);
+            backdrop-filter: blur(10px); opacity: 0; pointer-events: none;
+            transition: opacity 1s ease 0.5s;
+        }
+
+        .btn {
+            padding: 12px 40px; border: 1px solid var(--awake-blue); color: var(--awake-blue);
+            background: transparent; font-size: 11px; letter-spacing: 0.5em; cursor: pointer;
+            transition: all 0.4s; text-transform: uppercase; margin: 10px;
+        }
+        .btn:hover { background: var(--awake-blue); color: var(--void-black); box-shadow: 0 0 30px var(--awake-blue); }
+        .btn-minimal { border: none; opacity: 0.5; font-size: 9px; }
+
+        .product-content { max-width: 500px; text-align: center; }
+        .product-content h1 { font-size: 24px; letter-spacing: 0.8em; margin-bottom: 20px; color: var(--awake-blue); }
+        .product-content p { font-size: 13px; line-height: 1.8; opacity: 0.8; margin-bottom: 30px; letter-spacing: 0.1em; }
+
+        /* UI 文字 */
+        .ui-text { position: absolute; left: 40px; mix-blend-mode: exclusion; pointer-events: none; z-index: 10; }
+        .mellow-title { top: 40px; color: var(--awake-blue); font-size: 14px; letter-spacing: 0.6em; text-transform: uppercase; }
+        .mellow-sub { bottom: 40px; color: var(--aurora-white); font-size: 9px; opacity: 0.5; letter-spacing: 0.3em; }
+
+        /* 产品叙事屏 */
+        .narrative-screen { background: transparent; z-index: 5; pointer-events: none; }
+        .narrative-screen .content-box { max-width: 500px; pointer-events: auto; }
+        .narrative-screen h3 { color: var(--awake-blue); font-size: 18px; letter-spacing: 0.4em; margin-bottom: 20px; }
+        .narrative-screen p { font-size: 14px; opacity: 0.7; line-height: 1.8; }
+
+        #custom-cursor {
+            width: 8px; height: 8px; background: var(--awake-blue); border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 10000;
+            filter: blur(1px); transition: transform 0.1s linear; opacity: 0.8;
+        }
     </style>
 </head>
 <body>
 
-    <div id="overlay">
-        <button id="enter-btn" class="cta-btn">Unlock 724Hz Experience</button>
-    </div>
-
+    <div id="custom-cursor"></div>
     <div id="canvas-container"></div>
 
-    <div class="container">
-        <section id="hero">
-            <div class="content">
-                <h1>Astro Time Candle</h1>
-                <p>Time, Revealed — Not Counted. A physical instrument for focus in a digital world.</p>
+    <div id="overlay-entry">
+        <div style="margin-bottom: 30px; width: 1px; height: 60px; background: var(--awake-blue); opacity: 0.4;"></div>
+        <button id="enter-btn" class="btn">ENTER 724Hz</button>
+    </div>
+
+    <div class="main-scroll-container" id="scroller" style="display:none;">
+        
+        <section>
+            <div id="product-definition">
+                <div class="product-content">
+                    <h1>Astro Time Candle</h1>
+                    <div style="color: var(--awake-blue); margin-bottom: 10px; font-size: 10px; letter-spacing: 0.3em;">TIME, REVEALED — NOT COUNTED.</div>
+                    <p>A physical candle that replaces digital timers and transforms time into a visible, calming experience.</p>
+                    <div style="display: flex; justify-content: center;">
+                        <button class="btn" onclick="document.getElementById('how-it-works').scrollIntoView()">Learn More</button>
+                        <button class="btn btn-minimal" id="skip-btn">Skip</button>
+                    </div>
+                </div>
             </div>
         </section>
-        <section id="how-it-works">
-            <div class="content">
-                <h1 style="font-size: 2rem;">The Unfolding</h1>
-                <p>As the outer layer melts, a stable inner core is revealed. Time feels like something that unfolds, not something you lose.</p>
+
+        <section class="narrative-screen" id="how-it-works">
+            <div class="content-box">
+                <h3>01 / The Unfolding</h3>
+                <p>As the outer layer melts, a stable inner core is revealed. Time doesn’t feel like something you lose; it feels like something that unfolds.</p>
             </div>
+        </section>
+
+        <section class="narrative-screen">
+            <div class="content-box">
+                <h3>02 / The Friction</h3>
+                <p>Standard countdowns create subtle anxiety. Constant checking splits your focus. We provide a quiet, physical weight of time passing.</p>
+            </div>
+        </section>
+
+        <section class="narrative-screen">
+            <div class="content-box">
+                <h3>03 / The Ritual</h3>
+                <p>Light it before you focus. No alarms, no tracking. Just absolute presence in a 14.0°C environment. Architected for deep study.</p>
+            </div>
+            <div class="ui-text mellow-sub">Architect: Wei Jueran | Philadelphia | Variable S Active</div>
         </section>
     </div>
 
-    <script type="importmap">
-        { "imports": { "three": "https://unpkg.com/three@0.161.0/build/three.module.js" } }
-    </script>
-    <script type="module">
-        import * as THREE from 'three';
-
-        const enterBtn = document.getElementById('enter-btn');
-        const overlay = document.getElementById('overlay');
-        const container = document.getElementById('canvas-container');
-
-        let scene, camera, renderer, candle, sound, analyser;
-        let isAwake = false;
-
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(container.offsetWidth, container.offsetHeight);
-            container.appendChild(renderer.domElement);
-
-            // 蜡烛感质：#83B3BE
-            const geometry = new THREE.CylinderGeometry(1, 1.2, 4, 32);
-            const material = new THREE.MeshPhysicalMaterial({
-                color: 0x83B3BE, transmission: 0.9, roughness: 0.2,
-                emissive: 0x83B3BE, emissiveIntensity: 0.1
-            });
-            candle = new THREE.Mesh(geometry, material);
-            scene.add(candle);
-
-            camera.position.z = 8;
-
-            // 音频系统：3.0x 增益补偿
-            const listener = new THREE.AudioListener();
-            camera.add(listener);
-            sound = new THREE.Audio(listener);
-            
-            const gainNode = listener.context.createGain();
-            gainNode.gain.setValueAtTime(3.0, listener.context.currentTime); 
-            sound.setNodeSource(gainNode);
-
-            const audioLoader = new THREE.AudioLoader();
-            audioLoader.load('winter_sun.m4a', (buffer) => {
-                sound.setBuffer(buffer);
-                sound.setLoop(true);
-                sound.setVolume(1.0);
-            });
-            analyser = new THREE.AudioAnalyser(sound, 32);
-
-            animate();
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            candle.rotation.y += 0.00724; 
-            if (isAwake && analyser) {
-                const freq = analyser.getAverageFrequency();
-                candle.material.emissiveIntensity = 0.1 + (freq / 100);
-            }
-            renderer.render(scene, camera);
-        }
-
-        // 核心交互：强制点燃频率
-        enterBtn.addEventListener('click', () => {
-            isAwake = true;
-            if (THREE.AudioContext.getContext().state === 'suspended') {
-                THREE.AudioContext.getContext().resume();
-            }
-            if (sound) sound.play();
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.remove(), 1000);
-        });
-
-        init();
-    </script>
-</body>
-</html>
+    <div class="ui-text mellow-title">Astro Time Candle</div>
