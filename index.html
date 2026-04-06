@@ -16,7 +16,7 @@
             color: var(--aurora-white); scroll-behavior: smooth;
         }
         
-        /* 全量滚动容器 */
+        /* 强制滚动对齐 */
         .main-scroll-container {
             height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; display: none;
         }
@@ -28,14 +28,14 @@
 
         #canvas-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
         
-        /* 原始入口屏 */
+        /* 14.0°C 初始入口 */
         #overlay-entry {
             position: fixed; inset: 0; background: var(--void-black);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 100; transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* 核心产品介绍层 (Centered Overlay) */
+        /* 进入后的产品定义层 */
         #product-intro {
             position: absolute; inset: 0; z-index: 50;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -61,7 +61,7 @@
         .mellow-title { top: 40px; color: var(--awake-blue); font-size: 14px; letter-spacing: 0.6em; text-transform: uppercase; }
         .mellow-sub { bottom: 40px; color: var(--aurora-white); font-size: 9px; opacity: 0.5; letter-spacing: 0.3em; }
 
-        /* 叙事详情屏 */
+        /* 产品叙事屏 */
         .narrative-section { background: transparent; z-index: 5; pointer-events: none; }
         .narrative-box { max-width: 500px; pointer-events: auto; background: rgba(26,28,32,0.4); padding: 40px; border-left: 1px solid var(--awake-blue); }
         .narrative-section h3 { color: var(--awake-blue); font-size: 18px; letter-spacing: 0.4em; margin-bottom: 20px; }
@@ -143,52 +143,56 @@
         let scene, camera, renderer, candle, particles, analyser, sound;
         let isStarted = false;
 
-        // 光标逻辑
+        // 724Hz 光标逻辑
         window.addEventListener('mousemove', (e) => {
             cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
         });
 
         function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 5;
+            try {
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x1A1C20);
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.z = 5;
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            container.appendChild(renderer.domElement);
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                container.appendChild(renderer.domElement);
 
-            // 蜡烛感质：#83B3BE
-            const candleGeo = new THREE.CylinderGeometry(1, 1, 3, 64);
-            const candleMat = new THREE.MeshPhysicalMaterial({
-                color: 0x83B3BE, transmission: 0.85, roughness: 0.14,
-                thickness: 2, attenuationColor: 0x4A5B61, attenuationDistance: 0.6,
-                emissive: 0x83B3BE, emissiveIntensity: 0.1
-            });
-            candle = new THREE.Mesh(candleGeo, candleMat);
-            scene.add(candle);
+                // 蜡烛感质：#83B3BE
+                const candleGeo = new THREE.CylinderGeometry(1, 1, 3, 64);
+                const candleMat = new THREE.MeshPhysicalMaterial({
+                    color: 0x83B3BE, transmission: 0.85, roughness: 0.14,
+                    thickness: 2, attenuationColor: 0x4A5B61, attenuationDistance: 0.6,
+                    emissive: 0x83B3BE, emissiveIntensity: 0.1
+                });
+                candle = new THREE.Mesh(candleGeo, candleMat);
+                scene.add(candle);
 
-            // 粒子系统
-            const partGeo = new THREE.BufferGeometry();
-            const pos = new Float32Array(724 * 3);
-            for(let i=0; i<724*3; i++) pos[i] = (Math.random()-0.5)*12;
-            partGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-            particles = new THREE.Points(partGeo, new THREE.PointsMaterial({ color: 0xF2F2F2, size: 0.04, transparent: true, opacity: 0.4 }));
-            scene.add(particles);
+                // 724Hz 时间粒子
+                const partGeo = new THREE.BufferGeometry();
+                const pos = new Float32Array(724 * 3);
+                for(let i=0; i<724*3; i++) pos[i] = (Math.random()-0.5)*12;
+                partGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+                particles = new THREE.Points(partGeo, new THREE.PointsMaterial({ color: 0xF2F2F2, size: 0.04, transparent: true, opacity: 0.4 }));
+                scene.add(particles);
 
-            // 音频增益锁定
-            const listener = new THREE.AudioListener();
-            camera.add(listener);
-            sound = new THREE.Audio(listener);
-            const audioLoader = new THREE.AudioLoader();
-            audioLoader.load('winter_sun.m4a', (buffer) => {
-                sound.setBuffer(buffer);
-                sound.setLoop(true);
-                sound.setVolume(1.0); // 恢复 100% 采样增益
-            });
-            analyser = new THREE.AudioAnalyser(sound, 32);
-
-            animate();
+                // 音频采样：winter_sun.m4a
+                const listener = new THREE.AudioListener();
+                camera.add(listener);
+                sound = new THREE.Audio(listener);
+                const audioLoader = new THREE.AudioLoader();
+                audioLoader.load('winter_sun.m4a', (buffer) => {
+                    sound.setBuffer(buffer);
+                    sound.setLoop(true);
+                    sound.setVolume(1.0); 
+                    console.log("[724Hz] winter_sun.m4a 已加载");
+                }, undefined, (err) => console.error("音频加载失败:", err));
+                
+                analyser = new THREE.AudioAnalyser(sound, 32);
+                animate();
+            } catch (e) { console.error("初始化崩溃:", e); }
         }
 
         function animate() {
@@ -203,14 +207,21 @@
             renderer.render(scene, camera);
         }
 
-        // 核心交互逻辑
+        // 暴力唤醒 AudioContext 并点燃 724Hz 之火
         enterBtn.addEventListener('click', () => {
+            console.log("[724Hz] 启动中...");
             isStarted = true;
-            scroller.style.display = 'block'; // 激活滚动叙事层
+            scroller.style.display = 'block'; 
+            
             if (THREE.AudioContext.getContext().state === 'suspended') {
-                THREE.AudioContext.getContext().resume();
+                THREE.AudioContext.getContext().resume().then(() => {
+                    console.log("AudioContext 已激活");
+                    if (sound && sound.buffer) sound.play();
+                });
+            } else if (sound && sound.buffer) {
+                sound.play();
             }
-            if (sound) sound.play();
+
             entry.style.opacity = '0';
             setTimeout(() => {
                 entry.remove();
