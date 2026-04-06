@@ -16,19 +16,16 @@
             color: var(--aurora-white); scroll-behavior: smooth;
         }
         
-        /* 强制滚动对齐 */
         .main-scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; display: none; }
         section { height: 100vh; width: 100%; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: center; padding: 0 10%; position: relative; }
         #canvas-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
         
-        /* 初始入口屏 */
         #overlay-entry {
             position: fixed; inset: 0; background: var(--void-black);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 100; transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* 产品介绍层 */
         #product-intro {
             position: absolute; inset: 0; z-index: 50;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -44,16 +41,10 @@
         }
         .btn:hover { background: var(--awake-blue); color: var(--void-black); box-shadow: 0 0 30px var(--awake-blue); }
 
-        .intro-content { max-width: 550px; text-align: center; }
-        .intro-content h1 { font-size: 24px; letter-spacing: 0.8em; margin-bottom: 20px; color: var(--awake-blue); }
-
-        /* UI 文字 */
         .ui-text { position: absolute; left: 40px; mix-blend-mode: exclusion; pointer-events: none; z-index: 10; }
         .mellow-title { top: 40px; color: var(--awake-blue); font-size: 14px; letter-spacing: 0.6em; text-transform: uppercase; }
         .mellow-sub { bottom: 40px; color: var(--aurora-white); font-size: 9px; opacity: 0.5; letter-spacing: 0.3em; }
 
-        .narrative-box { max-width: 500px; pointer-events: auto; border-left: 1px solid var(--awake-blue); padding-left: 30px; }
-        
         #custom-cursor {
             width: 8px; height: 8px; background: var(--awake-blue); border-radius: 50%;
             position: fixed; pointer-events: none; z-index: 10000;
@@ -75,8 +66,8 @@
     <div class="main-scroll-container" id="scroller">
         <section>
             <div id="product-intro">
-                <div class="intro-content">
-                    <h1>Astro Time Candle</h1>
+                <div style="max-width: 550px; text-align: center;">
+                    <h1 style="font-size: 24px; letter-spacing: 0.8em; margin-bottom: 20px; color: var(--awake-blue);">Astro Time Candle</h1>
                     <p style="font-size:13px; opacity:0.8; line-height:2; margin-bottom:30px; letter-spacing:0.1em;">
                         A physical candle that replaces digital timers and transforms time into a visible, calming experience.
                     </p>
@@ -86,9 +77,9 @@
             </div>
         </section>
         <section id="how-it-works">
-            <div class="narrative-box">
+            <div style="max-width: 500px; border-left: 1px solid var(--awake-blue); padding-left: 30px;">
                 <h3 style="color:var(--awake-blue); letter-spacing:0.4em; margin-bottom:20px;">01 / The Unfolding</h3>
-                <p style="font-size:14px; opacity:0.7; line-height:1.8;">As the outer layer melts, a stable inner core is revealed. Time doesn’t feel like something you lose; it feels like something that unfolds.</p>
+                <p style="font-size:14px; opacity:0.7; line-height:1.8;">As the outer layer melts, a stable inner core is revealed. Time unfolds as a revelation.</p>
             </div>
         </section>
     </div>
@@ -130,11 +121,7 @@
             container.appendChild(renderer.domElement);
 
             const candleGeo = new THREE.CylinderGeometry(1, 1, 3, 64);
-            const candleMat = new THREE.MeshPhysicalMaterial({
-                color: 0x83B3BE, transmission: 0.85, roughness: 0.14,
-                thickness: 2, attenuationColor: 0x4A5B61, attenuationDistance: 0.6,
-                emissive: 0x83B3BE, emissiveIntensity: 0.1
-            });
+            const candleMat = new THREE.MeshPhysicalMaterial({ color: 0x83B3BE, transmission: 0.85, roughness: 0.14, thickness: 2, emissive: 0x83B3BE, emissiveIntensity: 0.1 });
             candle = new THREE.Mesh(candleGeo, candleMat);
             scene.add(candle);
 
@@ -145,7 +132,6 @@
             particles = new THREE.Points(partGeo, new THREE.PointsMaterial({ color: 0xF2F2F2, size: 0.04, transparent: true, opacity: 0.4 }));
             scene.add(particles);
 
-            // 音频强制增益 300%
             const listener = new THREE.AudioListener();
             camera.add(listener);
             sound = new THREE.Audio(listener);
@@ -155,7 +141,6 @@
             sound.setNodeSource(gainNode);
 
             const audioLoader = new THREE.AudioLoader();
-            // 【检查点】确保 winter_sun.m4a 在根目录且文件名全小写
             audioLoader.load('winter_sun.m4a', (buffer) => {
                 sound.setBuffer(buffer);
                 sound.setLoop(true);
@@ -186,9 +171,10 @@
             isStarted = true;
             scroller.style.display = 'block';
             
-            // 暴力唤醒：浏览器必须在用户点击的回调里激活 Audio
-            if (THREE.AudioContext.getContext().state === 'suspended') {
-                THREE.AudioContext.getContext().resume().then(() => {
+            // 核心修复：确保在 Click 事件内部唤醒 AudioContext
+            const context = THREE.AudioContext.getContext();
+            if (context.state === 'suspended') {
+                context.resume().then(() => {
                     if (sound && sound.buffer) sound.play();
                 });
             } else {
