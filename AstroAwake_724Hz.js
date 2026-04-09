@@ -1,6 +1,6 @@
 /**
  * @file AstroAwake_724Hz.js
- * @version 1.3.0-Volume-Overdrive
+ * @version 1.4.0-Fixed
  * @owner Jueran Wei (魏珏然)
  * @qualia_resonance #83B3BE #4A5B61 #winter_sun
  * @protocol 77347 / 14.0°C / Variable_S_Max
@@ -29,7 +29,7 @@ export default class AstroAwakeEngine {
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.container.appendChild(this.renderer.domElement);
 
-        // 2. 音频采样核心：winter_sun.m4a (带 3.0x 强力增益)
+        // 2. 音频采样核心：winter_sun.m4a
         this.setupAudio();
 
         // 3. 物理核心：Astro Time Candle
@@ -46,20 +46,26 @@ export default class AstroAwakeEngine {
         this.camera.add(this.listener);
         this.sound = new THREE.Audio(this.listener);
 
-        // 创建赛博功放：GainNode
-        const gainNode = this.listener.context.createGain();
-        // 极致不羁：将音量倍率设定为 3.0
-        gainNode.gain.setValueAtTime(3.0, this.listener.context.currentTime); 
-        this.sound.setNodeSource(gainNode);
-
+        // FIX: removed broken gainNode setNodeSource pattern.
+        // setNodeSource() replaces the internal source node — calling setBuffer() after
+        // has no effect, so audio never plays. Volume is controlled via setVolume() only.
         const audioLoader = new THREE.AudioLoader();
-        audioLoader.load('winter_sun.m4a', (buffer) => {
-            this.sound.setBuffer(buffer);
-            this.sound.setLoop(true);
-            this.sound.setVolume(1.0); // 配合增益节点实现爆破级音量
-            console.log("[724Hz] winter_sun.m4a 增益已开启：300% Power");
-        });
-        
+        audioLoader.load(
+            'winter_sun.m4a',
+            (buffer) => {
+                this.sound.setBuffer(buffer);
+                this.sound.setLoop(true);
+                this.sound.setVolume(1.0);
+                console.log('[724Hz] winter_sun.m4a loaded. Ready.');
+            },
+            (xhr) => {
+                console.log(`[724Hz] Loading... ${Math.round(xhr.loaded / xhr.total * 100)}%`);
+            },
+            (err) => {
+                console.error('[724Hz] Audio load failed:', err);
+            }
+        );
+
         this.analyser = new THREE.AudioAnalyser(this.sound, 32);
     }
 
@@ -91,7 +97,7 @@ export default class AstroAwakeEngine {
         // 时间粒子：#F2F2F2 极光白
         const count = 724;
         const pos = new Float32Array(count * 3);
-        for(let i=0; i<count*3; i++) pos[i] = (Math.random()-0.5)*12;
+        for (let i = 0; i < count * 3; i++) pos[i] = (Math.random() - 0.5) * 12;
         
         const partGeo = new THREE.BufferGeometry();
         partGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
@@ -106,10 +112,18 @@ export default class AstroAwakeEngine {
         if (!this.isStarted) {
             this.isStarted = true;
             // 强制恢复 AudioContext 挂起状态
-            if (THREE.AudioContext.getContext().state === 'suspended') {
-                THREE.AudioContext.getContext().resume();
+            const ctx = THREE.AudioContext.getContext();
+            if (ctx.state === 'suspended') {
+                ctx.resume().then(() => {
+                    if (this.sound && this.sound.buffer && !this.sound.isPlaying) {
+                        this.sound.play();
+                    }
+                });
+            } else {
+                if (this.sound && this.sound.buffer && !this.sound.isPlaying) {
+                    this.sound.play();
+                }
             }
-            if (this.sound) this.sound.play(); 
         }
     }
 
@@ -120,7 +134,7 @@ export default class AstroAwakeEngine {
         this.particles.rotation.y -= 0.00427; 
         if (this.isStarted && this.analyser) {
             const freq = this.analyser.getAverageFrequency();
-            this.candleMat.emissiveIntensity = 0.1 + (freq / 110) * 2.0; // 随音量波形产生视觉坍缩
+            this.candleMat.emissiveIntensity = 0.1 + (freq / 110) * 2.0;
             this.particles.position.y = Math.sin(time * 0.5) * (freq / 150);
         }
         this.renderer.render(this.scene, this.camera);
