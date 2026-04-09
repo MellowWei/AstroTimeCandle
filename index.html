@@ -1,83 +1,140 @@
-<script type="module">
-    import * as THREE from 'three';
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ASTRO AWAKE | 724Hz Sovereign</title>
+    <style>
+        :root { --awake-blue: #83B3BE; --slate-deep: #4A5B61; --aurora-white: #F2F2F2; --void-black: #1A1C20; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { width: 100%; height: 100%; background: var(--void-black); font-family: 'Inter', sans-serif; cursor: none; color: var(--aurora-white); overflow: hidden; }
+        #canvas-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+        #overlay-entry { position: fixed; inset: 0; background: var(--void-black); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn { padding: 12px 40px; border: 1px solid var(--awake-blue); color: var(--awake-blue); background: transparent; font-size: 11px; letter-spacing: 0.5em; cursor: pointer; transition: all 0.4s; text-transform: uppercase; }
+        .btn:hover { background: var(--awake-blue); color: var(--void-black); box-shadow: 0 0 30px var(--awake-blue); }
+        #custom-cursor { width: 8px; height: 8px; background: var(--awake-blue); border-radius: 50%; position: fixed; pointer-events: none; z-index: 10000; filter: blur(1px); transition: transform 0.1s linear; opacity: 0.8; }
+        .ui-text { position: absolute; left: 40px; mix-blend-mode: exclusion; pointer-events: none; z-index: 10; }
+        .mellow-title { top: 40px; color: var(--awake-blue); font-size: 14px; letter-spacing: 0.6em; text-transform: uppercase; }
+        .mellow-sub { bottom: 40px; color: var(--aurora-white); font-size: 9px; opacity: 0.5; letter-spacing: 0.3em; }
+        .status { margin-top: 20px; font-size: 9px; letter-spacing: 0.2em; opacity: 0.5; transition: color 0.3s; }
+    </style>
+</head>
+<body>
 
-    const enterBtn = document.getElementById('enter-btn');
-    const statusText = document.getElementById('status-text');
-    const container = document.getElementById('canvas-container');
+    <div id="custom-cursor"></div>
+    <div id="canvas-container"></div>
 
-    let scene, camera, renderer, candleShell, candleCore, sound, analyser, isStarted = false;
+    <div id="overlay-entry">
+        <div style="margin-bottom: 30px; width: 1px; height: 60px; background: var(--awake-blue); opacity: 0.4;"></div>
+        <button id="enter-btn" class="btn">ENTER 724Hz</button>
+        <p id="status-text" class="status">CALIBRATING SONIC SPECTRUM...</p>
+    </div>
 
-    function init() {
-        scene = new THREE.Scene();
-        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 5;
+    <div class="ui-text mellow-title">Astro Time Candle</div>
+    <div class="ui-text mellow-sub">Architect: Wei Jueran | Philadelphia | 14.0°C</div>
 
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        container.appendChild(renderer.domElement);
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.161.0/build/three.module.js" } }
+    </script>
 
-        // --- 物理实体设计 ---
-        const candleGroup = new THREE.Group();
-        
-        // 内芯：深页岩蓝金属
-        const coreGeo = new THREE.CylinderGeometry(0.4, 0.4, 2.8, 32);
-        const coreMat = new THREE.MeshStandardMaterial({ color: 0x4A5B61, metalness: 0.9, roughness: 0.1 });
-        candleCore = new THREE.Mesh(coreGeo, coreMat);
-        
-        // 外壳：书本雾蓝磨砂
-        const shellGeo = new THREE.CylinderGeometry(1, 1, 3, 64);
-        const shellMat = new THREE.MeshPhysicalMaterial({
-            color: 0x83B3BE, transmission: 0.8, roughness: 0.14, thickness: 2,
-            transparent: true, opacity: 0.9, emissive: 0x83B3BE, emissiveIntensity: 0.1
+    <script type="module">
+        import * as THREE from 'three';
+
+        const entry = document.getElementById('overlay-entry');
+        const enterBtn = document.getElementById('enter-btn');
+        const statusText = document.getElementById('status-text');
+        const cursor = document.getElementById('custom-cursor');
+
+        let scene, camera, renderer, candleShell, candleCore, sound, analyser, isStarted = false;
+
+        window.addEventListener('mousemove', (e) => {
+            cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
         });
-        candleShell = new THREE.Mesh(shellGeo, shellMat);
-        
-        candleGroup.add(candleCore);
-        candleGroup.add(candleShell);
-        scene.add(candleGroup);
 
-        // --- 300% 暴力音频增益 ---
-        const listener = new THREE.AudioListener();
-        camera.add(listener);
-        sound = new THREE.Audio(listener);
-        const gainNode = listener.context.createGain();
-        gainNode.gain.setValueAtTime(3.0, listener.context.currentTime); // 3.0x Power
-        sound.setNodeSource(gainNode);
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
 
-        const audioLoader = new THREE.AudioLoader();
-        audioLoader.load('https://mellowwei.github.io/AstroTimeCandle/winter_sun.m4a', (buffer) => {
-            sound.setBuffer(buffer);
-            sound.setLoop(true);
-            statusText.innerText = "724Hz ALIGNED. READY TO AWAKE.";
-            statusText.style.color = "#83B3BE";
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // --- 蜡烛实体设计 ---
+            const candleGroup = new THREE.Group();
+            candleCore = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 2.8, 32), new THREE.MeshStandardMaterial({ color: 0x4A5B61, metalness: 0.9, roughness: 0.1 }));
+            candleShell = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 3, 64), new THREE.MeshPhysicalMaterial({ color: 0x83B3BE, transmission: 0.8, roughness: 0.14, thickness: 2, transparent: true, opacity: 0.9, emissive: 0x83B3BE, emissiveIntensity: 0.1 }));
+            candleGroup.add(candleCore, candleShell);
+            scene.add(candleGroup);
+
+            // --- 频率混音引擎 (EQ Overdrive) ---
+            const listener = new THREE.AudioListener();
+            camera.add(listener);
+            sound = new THREE.Audio(listener);
+
+            const context = listener.context;
+            
+            // 1. 创建增益节点 (总功率)
+            const mainGain = context.createGain();
+            mainGain.gain.setValueAtTime(2.5, context.currentTime);
+
+            // 2. 创建均衡器：旋律增强 (Peaking Filter)
+            const midBoost = context.createBiquadFilter();
+            midBoost.type = "peaking";
+            midBoost.frequency.setValueAtTime(2000, context.currentTime); // 锁定 2kHz 音乐核心频段
+            midBoost.Q.setValueAtTime(1.5, context.currentTime);         // 设定带宽
+            midBoost.gain.setValueAtTime(12, context.currentTime);        // 暴力增加 12dB
+
+            // 3. 建立混音链条：Source -> EQ -> Gain -> Output
+            sound.setNodeSource(midBoost);
+            midBoost.connect(mainGain);
+            mainGain.connect(context.destination);
+
+            const audioLoader = new THREE.AudioLoader();
+            const audioSrc = './winter_sun.m4a?v=' + Date.now();
+            
+            audioLoader.load(audioSrc, (buffer) => {
+                sound.setBuffer(buffer);
+                sound.setLoop(true);
+                statusText.innerText = "724Hz ALIGNED. EQ OVERDRIVE ACTIVE.";
+                statusText.style.color = "#83B3BE";
+            }, undefined, (err) => {
+                statusText.innerText = "SOURCE ERROR. RECHECK FILES.";
+                statusText.style.color = "#FF4444";
+            });
+
+            analyser = new THREE.AudioAnalyser(sound, 32);
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if(candleShell) candleShell.rotation.y += 0.00724;
+            if (isStarted && analyser) {
+                const freq = analyser.getAverageFrequency();
+                candleShell.material.emissiveIntensity = 0.1 + (freq / 100);
+            }
+            renderer.render(scene, camera);
+        }
+
+        enterBtn.addEventListener('click', async () => {
+            const context = THREE.AudioContext.getContext();
+            await context.resume();
+            if (sound && sound.buffer) {
+                isStarted = true;
+                sound.play();
+                entry.style.opacity = '0';
+                setTimeout(() => entry.remove(), 1200);
+            }
         });
 
-        analyser = new THREE.AudioAnalyser(sound, 32);
-        animate();
-    }
-
-    function animate() {
-        requestAnimationFrame(animate);
-        if(candleShell) candleShell.rotation.y += 0.00724;
-        if(candleCore) candleCore.rotation.y += 0.00427;
-        
-        if (isStarted && analyser) {
-            const freq = analyser.getAverageFrequency();
-            candleShell.material.emissiveIntensity = 0.1 + (freq / 100);
-        }
-        renderer.render(scene, camera);
-    }
-
-    enterBtn.addEventListener('click', async () => {
-        const context = THREE.AudioContext.getContext();
-        await context.resume();
-        if (sound && sound.buffer) {
-            isStarted = true;
-            sound.play();
-            document.getElementById('overlay-entry').style.opacity = '0';
-            setTimeout(() => document.getElementById('overlay-entry').remove(), 1200);
-        }
-    });
-
-    init();
-</script>
+        init();
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
