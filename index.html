@@ -5,18 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ASTRO AWAKE | 724Hz Sovereign</title>
     <style>
-        :root { --awake-blue: #83B3BE; --slate-deep: #4A5B61; --aurora-white: #F2F2F2; --void-black: #1A1C20; }
+        :root {
+            --awake-blue: #83B3BE; --slate-deep: #4A5B61;
+            --aurora-white: #F2F2F2; --void-black: #1A1C20;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { width: 100%; height: 100%; background: var(--void-black); font-family: 'Inter', sans-serif; cursor: none; color: var(--aurora-white); overflow: hidden; }
+        body, html { 
+            width: 100%; height: 100%; background: var(--void-black); 
+            font-family: 'Inter', sans-serif; cursor: none;
+            color: var(--aurora-white); overflow: hidden;
+        }
+        
         #canvas-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-        #overlay-entry { position: fixed; inset: 0; background: var(--void-black); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .btn { padding: 12px 40px; border: 1px solid var(--awake-blue); color: var(--awake-blue); background: transparent; font-size: 11px; letter-spacing: 0.5em; cursor: pointer; transition: all 0.4s; text-transform: uppercase; }
+        
+        /* 初始入口屏 */
+        #overlay-entry {
+            position: fixed; inset: 0; background: var(--void-black);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn {
+            padding: 12px 40px; border: 1px solid var(--awake-blue); color: var(--awake-blue);
+            background: transparent; font-size: 11px; letter-spacing: 0.5em; cursor: pointer;
+            transition: all 0.4s; text-transform: uppercase; margin: 10px;
+        }
         .btn:hover { background: var(--awake-blue); color: var(--void-black); box-shadow: 0 0 30px var(--awake-blue); }
-        #custom-cursor { width: 8px; height: 8px; background: var(--awake-blue); border-radius: 50%; position: fixed; pointer-events: none; z-index: 10000; filter: blur(1px); transition: transform 0.1s linear; opacity: 0.8; }
+
+        .status { margin-top: 20px; font-size: 9px; letter-spacing: 0.2em; opacity: 0.5; transition: color 0.3s; }
+
+        /* UI 文字标识 */
         .ui-text { position: absolute; left: 40px; mix-blend-mode: exclusion; pointer-events: none; z-index: 10; }
         .mellow-title { top: 40px; color: var(--awake-blue); font-size: 14px; letter-spacing: 0.6em; text-transform: uppercase; }
         .mellow-sub { bottom: 40px; color: var(--aurora-white); font-size: 9px; opacity: 0.5; letter-spacing: 0.3em; }
-        .status { margin-top: 20px; font-size: 9px; letter-spacing: 0.2em; opacity: 0.5; transition: color 0.3s; }
+
+        #custom-cursor {
+            width: 8px; height: 8px; background: var(--awake-blue); border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 10000;
+            filter: blur(1px); transition: transform 0.1s linear; opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -27,7 +54,7 @@
     <div id="overlay-entry">
         <div style="margin-bottom: 30px; width: 1px; height: 60px; background: var(--awake-blue); opacity: 0.4;"></div>
         <button id="enter-btn" class="btn">ENTER 724Hz</button>
-        <p id="status-text" class="status">CALIBRATING COSMIC FREQUENCY...</p>
+        <p id="status-text" class="status">CALIBRATING FREQUENCY...</p>
     </div>
 
     <div class="ui-text mellow-title">Astro Time Candle</div>
@@ -44,12 +71,11 @@
         const enterBtn = document.getElementById('enter-btn');
         const statusText = document.getElementById('status-text');
         const cursor = document.getElementById('custom-cursor');
-        const canvasContainer = document.getElementById('canvas-container');
+        const container = document.getElementById('canvas-container');
 
         let scene, camera, renderer, candleShell, candleCore, sound, analyser, isStarted = false;
-        let cosmicDust, dustParams = { count: 10000, radius: 10, randomness: 1.5, spin: 2 }; // 星际尘埃参数
+        let particles, particleCount = 10000;
 
-        // 724Hz 光标
         window.addEventListener('mousemove', (e) => {
             cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
         });
@@ -57,132 +83,163 @@
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 8; // 稍微拉远，展现星云全貌
+            camera.position.z = 12; // 稍微拉远，适应放大的蜡烛
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
-            canvasContainer.appendChild(renderer.domElement);
+            container.appendChild(renderer.domElement);
 
-            // --- 蜡烛实体设计 ---
+            // --- 蜡烛实体设计 (尺度放大 3 倍) ---
             const candleGroup = new THREE.Group();
-            candleCore = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 2.8, 32), new THREE.MeshStandardMaterial({ color: 0x4A5B61, metalness: 0.9, roughness: 0.1 }));
-            candleShell = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 3, 64), new THREE.MeshPhysicalMaterial({ color: 0x83B3BE, transmission: 0.8, roughness: 0.14, thickness: 2, transparent: true, opacity: 0.9, emissive: 0x83B3BE, emissiveIntensity: 0.1 }));
+            
+            // 内芯：深页岩蓝金属
+            const coreGeo = new THREE.CylinderGeometry(1.2, 1.2, 8.4, 32); // 放大 3 倍
+            const coreMat = new THREE.MeshStandardMaterial({
+                color: 0x4A5B61, metalness: 0.9, roughness: 0.1
+            });
+            candleCore = new THREE.Mesh(coreGeo, coreMat);
+            
+            // 外壳：书本雾蓝磨砂
+            const shellGeo = new THREE.CylinderGeometry(3, 3, 9, 64); // 放大 3 倍
+            const shellMat = new THREE.MeshPhysicalMaterial({
+                color: 0x83B3BE, transmission: 0.8, roughness: 0.14, thickness: 6, // thickness 随尺度增加
+                transparent: true, opacity: 0.9, emissive: 0x83B3BE, emissiveIntensity: 0.1
+            });
+            candleShell = new THREE.Mesh(shellGeo, shellMat);
+            
             candleGroup.add(candleCore, candleShell);
             scene.add(candleGroup);
 
-            // --- 宇宙银河感粒子背景 (The Cosmic Dust) ---
-            createCosmicDust();
+            // --- 梦幻粒子系统 (告别方块与直线) ---
+            createCosmicParticles();
 
-            // --- 频率混音引擎 (保持 EQ 补丁) ---
+            // --- 频率混音引擎 ( 修复增益与 EQ 噪音 ) ---
+            setupAudio(camera);
+
+            animate();
+        }
+
+        function createCosmicParticles() {
+            // 动态生成圆形发光贴图
+            const canvas = document.createElement('canvas');
+            canvas.width = 64; canvas.height = 64;
+            const context = canvas.getContext('2d');
+            const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+            gradient.addColorStop(0, 'rgba(242, 242, 242, 1)'); // #F2F2F2
+            gradient.addColorStop(0.2, 'rgba(131, 179, 190, 0.8)'); // #83B3BE
+            gradient.addColorStop(0.6, 'rgba(26, 28, 32, 0)'); // 透明边缘
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, 64, 64);
+            const particleTexture = new THREE.CanvasTexture(canvas);
+
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            
+            // 随机球形分布，围绕蜡烛
+            for (let i = 0; i < particleCount * 3; i++) {
+                positions[i] = (Math.random() - 0.5) * 40; // 扩大分布范围，适应放大的蜡烛
+            }
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.4,
+                map: particleTexture, // 强制加载发光圆点贴图
+                transparent: true,
+                opacity: 0.7,
+                blending: THREE.AdditiveBlending, // 加法混合，产生梦幻感
+                depthWrite: false, // 防止遮挡，保持透明感
+                sizeAttenuation: true // 粒子随距离缩放
+            });
+
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+        }
+
+        function setupAudio(camera) {
             const listener = new THREE.AudioListener();
             camera.add(listener);
             sound = new THREE.Audio(listener);
+
             const context = listener.context;
             
+            // 1. 创建增益节点 (总功率 修复静默噪音)
             const mainGain = context.createGain();
-            mainGain.gain.setValueAtTime(2.5, context.currentTime);
+            mainGain.gain.setValueAtTime(1.0, context.currentTime); // 初始音量 1.0
 
+            // 2. 创建均衡器：旋律增强 ( 修复 EQ 噪音 )
             const midBoost = context.createBiquadFilter();
             midBoost.type = "peaking";
             midBoost.frequency.setValueAtTime(2000, context.currentTime); 
             midBoost.Q.setValueAtTime(1.5, context.currentTime);        
-            midBoost.gain.setValueAtTime(12, context.currentTime);        
+            midBoost.gain.setValueAtTime(8, context.currentTime);        
 
-            sound.setNodeSource(midBoost);
-            midBoost.connect(mainGain);
-            mainGain.connect(context.destination);
+            // 魏珏然，在这里调参：
+            // 1.0 = 原始音量
+            // 3.0 = 极致增益
+            // 5.0 = 震碎现实
+            const musicGain = context.createGain();
+            musicGain.gain.setValueAtTime(3.5, context.currentTime); // 3.5x Power
+
+            // 建立混音链条：Source -> Gain -> EQ -> MainGain -> Output
+            sound.setNodeSource(mainGain);
+            mainGain.connect(midBoost);
+            midBoost.connect(musicGain);
+            musicGain.connect(context.destination);
 
             const audioLoader = new THREE.AudioLoader();
-            const audioSrc = './winter_sun.m4a?v=' + Date.now();
-            
-            audioLoader.load(audioSrc, (buffer) => {
+            const audioPath = 'https://mellowwei.github.io/AstroTimeCandle/winter_sun.m4a?v=' + Date.now();
+
+            audioLoader.load(audioPath, (buffer) => {
                 sound.setBuffer(buffer);
                 sound.setLoop(true);
-                statusText.innerText = "724Hz ALIGNED. COSMOS READY.";
+                statusText.innerText = "724Hz ALIGNED. POWER BOOST ACTIVE.";
                 statusText.style.color = "#83B3BE";
-            }, undefined, (err) => {
+                console.log("[724Hz] winter_sun.m4a 装填完毕");
+            }, (xhr) => {
+                statusText.innerText = "LOADING: " + Math.round(xhr.loaded / xhr.total * 100) + "%";
+            }, (err) => {
                 statusText.innerText = "SOURCE ERROR. RECHECK FILES.";
                 statusText.style.color = "#FF4444";
             });
 
             analyser = new THREE.AudioAnalyser(sound, 32);
-            animate();
-        }
-
-        // 创建引力漩涡状的星际尘埃
-        function createCosmicDust() {
-            const geometry = new THREE.BufferGeometry();
-            const positions = new Float32Array(dustParams.count * 3);
-            const colors = new Float32Array(dustParams.count * 3);
-
-            const colorInside = new THREE.Color(0x4A5B61); // 深页岩蓝
-            const colorOutside = new THREE.Color(0x83B3BE); // 书本雾蓝
-
-            for(let i = 0; i < dustParams.count; i++) {
-                const radius = Math.random() * dustParams.radius;
-                const spinAngle = radius * dustParams.spin;
-                const branchAngle = Math.random() * Math.PI * 2;
-
-                const randomX = Math.pow(Math.random(), dustParams.randomness) * (Math.random() < 0.5 ? 1 : -1);
-                const randomY = Math.pow(Math.random(), dustParams.randomness) * (Math.random() < 0.5 ? 1 : -1);
-                const randomZ = Math.pow(Math.random(), dustParams.randomness) * (Math.random() < 0.5 ? 1 : -1);
-
-                positions[i * 3 + 0] = Math.cos(branchAngle + spinAngle) * radius + randomX;
-                positions[i * 3 + 1] = randomY; // 保持扁平结构
-                positions[i * 3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
-
-                // 顶点着色逻辑
-                const mixedColor = colorInside.clone();
-                mixedColor.lerp(colorOutside, radius / dustParams.radius); // 根据半径线性插值
-                
-                colors[i * 3 + 0] = mixedColor.r;
-                colors[i * 3 + 1] = mixedColor.g;
-                colors[i * 3 + 2] = mixedColor.b;
-            }
-
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-            // 梦幻加法混合材质
-            const material = new THREE.PointsMaterial({
-                size: 0.03,
-                sizeAttenuation: true,
-                depthWrite: false,
-                blending: THREE.AdditiveBlending, // 加法混合
-                vertexColors: true, // 启用顶点着色
-                transparent: true,
-                opacity: 0.7
-            });
-
-            cosmicDust = new THREE.Points(geometry, material);
-            scene.add(cosmicDust);
         }
 
         function animate() {
             requestAnimationFrame(animate);
             if(candleShell) candleShell.rotation.y += 0.00724;
             
-            // 宇宙漩涡慢旋转
-            if(cosmicDust) cosmicDust.rotation.y += 0.001;
+            // 梦幻粒子随机漂移
+            if (particles) {
+                particles.rotation.y += 0.001;
+                particles.rotation.z += 0.0005;
+            }
 
             if (isStarted && analyser) {
                 const freq = analyser.getAverageFrequency();
-                // 频率驱动：越响，星云整体透明度越高，产生爆裂感
-                if(cosmicDust) cosmicDust.material.opacity = 0.5 + (freq / 150);
-                if(candleShell) candleShell.material.emissiveIntensity = 0.1 + (freq / 100);
+                candleShell.material.emissiveIntensity = 0.1 + (freq / 100);
             }
             renderer.render(scene, camera);
         }
 
         enterBtn.addEventListener('click', async () => {
             const context = THREE.AudioContext.getContext();
-            await context.resume();
+            
+            // 暴力唤醒 AudioContext ( 修复声音静默逻辑 )
+            if (context.state === 'suspended') {
+                await context.resume();
+                console.log("AudioContext 强行激活");
+            }
+            
             if (sound && sound.buffer) {
                 isStarted = true;
                 sound.play();
-                entry.style.opacity = '0';
-                setTimeout(() => entry.remove(), 1200);
+                document.getElementById('overlay-entry').style.opacity = '0';
+                setTimeout(() => document.getElementById('overlay-entry').remove(), 1200);
+            } else {
+                // 如果没加载完，强行提示
+                statusText.innerText = "WAITING FOR SOURCE...";
             }
         });
 
