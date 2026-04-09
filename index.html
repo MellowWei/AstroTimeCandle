@@ -3,46 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ASTRO AWAKE | 724Hz Sovereign</title>
+    <title>ASTRO TIME CANDLE | 724Hz Sovereign</title>
     <style>
         :root {
-            --awake-blue: #83B3BE; --slate-deep: #4A5B61;
-            --aurora-white: #F2F2F2; --void-black: #1A1C20;
+            --awake-blue: #83B3BE;
+            --slate-deep: #4A5B61;
+            --aurora-white: #F2F2F2;
+            --void-black: #1A1C20;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { 
-            width: 100%; height: 100%; background: var(--void-black); 
-            font-family: 'Inter', sans-serif; cursor: none;
-            color: var(--aurora-white); overflow: hidden;
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--void-black);
+            font-family: 'Inter', sans-serif;
+            cursor: none;
+            color: var(--aurora-white);
+            overflow: hidden;
         }
-        
+
         #canvas-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-        
-        /* 14.0°C 初始入口协议 */
+
+        /* Entry overlay */
         #overlay-entry {
-            position: fixed; inset: 0; background: var(--void-black);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 100; transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: fixed; inset: 0;
+            background: var(--void-black);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 100;
+            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .btn {
-            padding: 12px 40px; border: 1px solid var(--awake-blue); color: var(--awake-blue);
-            background: transparent; font-size: 11px; letter-spacing: 0.5em; cursor: pointer;
-            transition: all 0.4s; text-transform: uppercase; margin: 10px;
+            padding: 12px 40px;
+            border: 1px solid var(--awake-blue);
+            color: var(--awake-blue);
+            background: transparent;
+            font-size: 11px;
+            letter-spacing: 0.5em;
+            cursor: pointer;
+            transition: all 0.4s;
+            text-transform: uppercase;
+            margin: 10px;
         }
-        .btn:hover { background: var(--awake-blue); color: var(--void-black); box-shadow: 0 0 30px var(--awake-blue); }
+        .btn:hover {
+            background: var(--awake-blue);
+            color: var(--void-black);
+            box-shadow: 0 0 30px var(--awake-blue);
+        }
 
-        .status { margin-top: 20px; font-size: 9px; letter-spacing: 0.2em; opacity: 0.5; transition: color 0.3s; }
+        .status {
+            margin-top: 20px;
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            opacity: 0.5;
+            transition: color 0.3s;
+        }
 
-        /* UI 文字标识 */
-        .ui-text { position: absolute; left: 40px; mix-blend-mode: exclusion; pointer-events: none; z-index: 10; }
-        .mellow-title { top: 40px; color: var(--awake-blue); font-size: 14px; letter-spacing: 0.6em; text-transform: uppercase; }
-        .mellow-sub { bottom: 40px; color: var(--aurora-white); font-size: 9px; opacity: 0.5; letter-spacing: 0.3em; }
+        /* UI labels */
+        .ui-text {
+            position: absolute;
+            left: 40px;
+            mix-blend-mode: exclusion;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .mellow-title {
+            top: 40px;
+            color: var(--awake-blue);
+            font-size: 14px;
+            letter-spacing: 0.6em;
+            text-transform: uppercase;
+        }
+        .mellow-sub {
+            bottom: 40px;
+            color: var(--aurora-white);
+            font-size: 9px;
+            opacity: 0.5;
+            letter-spacing: 0.3em;
+        }
 
         #custom-cursor {
-            width: 8px; height: 8px; background: var(--awake-blue); border-radius: 50%;
-            position: fixed; pointer-events: none; z-index: 10000;
-            filter: blur(1px); transition: transform 0.1s linear; opacity: 0.8;
+            width: 8px; height: 8px;
+            background: var(--awake-blue);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            filter: blur(1px);
+            transition: transform 0.1s linear;
+            opacity: 0.8;
+            /* offset so cursor center aligns with pointer */
+            margin-left: -4px;
+            margin-top: -4px;
         }
     </style>
 </head>
@@ -75,7 +127,7 @@
         let scene, camera, renderer, candle, particles, analyser, sound, audioBuffer;
         let isStarted = false;
 
-        // 724Hz 光标
+        // Custom cursor
         window.addEventListener('mousemove', (e) => {
             cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
         });
@@ -90,45 +142,73 @@
             renderer.setPixelRatio(window.devicePixelRatio);
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-            // 蜡烛主体：#83B3BE (书本雾蓝)
+            // Candle body
             const candleGeo = new THREE.CylinderGeometry(1, 1, 3, 64);
             const candleMat = new THREE.MeshPhysicalMaterial({
-                color: 0x83B3BE, transmission: 0.85, roughness: 0.14,
-                thickness: 2, emissive: 0x83B3BE, emissiveIntensity: 0.1
+                color: 0x83B3BE,
+                transmission: 0.85,
+                roughness: 0.14,
+                thickness: 2,
+                emissive: 0x83B3BE,
+                emissiveIntensity: 0.1
             });
             candle = new THREE.Mesh(candleGeo, candleMat);
             scene.add(candle);
 
-            // 724Hz 粒子系统
+            // Ambient light so the candle is visible
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0x83B3BE, 2, 20);
+            pointLight.position.set(3, 3, 3);
+            scene.add(pointLight);
+
+            // 724 particle system
             const partGeo = new THREE.BufferGeometry();
             const pos = new Float32Array(724 * 3);
-            for(let i=0; i<724*3; i++) pos[i] = (Math.random()-0.5)*12;
+            for (let i = 0; i < 724 * 3; i++) pos[i] = (Math.random() - 0.5) * 12;
             partGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-            particles = new THREE.Points(partGeo, new THREE.PointsMaterial({ color: 0xF2F2F2, size: 0.04, transparent: true, opacity: 0.4 }));
+            particles = new THREE.Points(partGeo, new THREE.PointsMaterial({
+                color: 0xF2F2F2, size: 0.04, transparent: true, opacity: 0.4
+            }));
             scene.add(particles);
 
-            // 音频内核驱动
+            // ── Audio ──────────────────────────────────────────────
+            // FIX: removed the broken gainNode setNodeSource pattern.
+            // THREE.Audio manages its own source node internally via setBuffer().
+            // Volume is controlled with setVolume() after setBuffer().
             const listener = new THREE.AudioListener();
             camera.add(listener);
             sound = new THREE.Audio(listener);
-            
-            const gainNode = listener.context.createGain();
-            gainNode.gain.setValueAtTime(4.0, listener.context.currentTime); 
-            sound.setNodeSource(gainNode);
-
-            const audioLoader = new THREE.AudioLoader();
-            audioLoader.load('./winter_sun.m4a', (buffer) => {
-                audioBuffer = buffer;
-                sound.setBuffer(buffer);
-                sound.setLoop(true);
-                statusText.innerText = "724Hz ALIGNED. READY TO AWAKE.";
-                statusText.style.color = "#83B3BE";
-            }, undefined, (err) => {
-                statusText.innerText = "AUDIO LOAD ERROR. CHECK FILENAME.";
-                statusText.style.color = "#FF4444";
-            });
 
             analyser = new THREE.AudioAnalyser(sound, 32);
+
+            const audioLoader = new THREE.AudioLoader();
+            audioLoader.load(
+                './winter_sun.m4a',
+                (buffer) => {
+                    audioBuffer = buffer;
+                    sound.setBuffer(buffer);
+                    sound.setLoop(true);
+                    sound.setVolume(1.0);   // ← clean volume control
+                    statusText.innerText = '724Hz ALIGNED. READY TO AWAKE.';
+                    statusText.style.color = '#83B3BE';
+                    statusText.style.opacity = '1';
+                },
+                (xhr) => {
+                    const pct = Math.round((xhr.loaded / xhr.total) * 100);
+                    statusText.innerText = `LOADING AUDIO... ${pct}%`;
+                },
+                (err) => {
+                    console.error('Audio load error:', err);
+                    statusText.innerText = 'AUDIO UNAVAILABLE — VISUAL MODE';
+                    statusText.style.color = '#FFBB00';
+                    statusText.style.opacity = '1';
+                    // Allow entering without audio
+                    enterBtn.innerText = 'ENTER (SILENT)';
+                }
+            );
+            // ──────────────────────────────────────────────────────
+
             animate();
         }
 
@@ -136,33 +216,34 @@
             requestAnimationFrame(animate);
             candle.rotation.y += 0.00724;
             particles.rotation.y -= 0.00427;
+
             if (isStarted && analyser) {
                 const freq = analyser.getAverageFrequency();
-                candle.material.emissiveIntensity = 0.1 + (freq / 100);
+                candle.material.emissiveIntensity = 0.1 + freq / 100;
             }
+
             renderer.render(scene, camera);
         }
 
         enterBtn.addEventListener('click', async () => {
+            // FIX: always resume AudioContext on user gesture (required by all browsers)
             const context = THREE.AudioContext.getContext();
-            
-            // 暴力唤醒 AudioContext
             if (context.state === 'suspended') {
                 await context.resume();
             }
-            
-            if (audioBuffer) {
-                isStarted = true;
+
+            if (audioBuffer && !sound.isPlaying) {
                 sound.play();
-                entry.style.opacity = '0';
-                setTimeout(() => entry.remove(), 1200);
-            } else {
-                statusText.innerText = "WAITING FOR SOURCE...";
-                statusText.style.color = "#FFBB00";
             }
+
+            // Enter regardless of audio state
+            isStarted = true;
+            entry.style.opacity = '0';
+            setTimeout(() => entry.style.display = 'none', 1200);
         });
 
         init();
+
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
