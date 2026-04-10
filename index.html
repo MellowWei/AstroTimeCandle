@@ -15,27 +15,34 @@
             font-family: 'Inter', sans-serif; cursor: none;
             color: var(--aurora-white); overflow: hidden;
         }
+        
         #canvas-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+        
+        /* 初始入口屏 */
         #overlay-entry {
             position: fixed; inset: 0; background: var(--void-black);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 100; transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .btn {
             padding: 12px 40px; border: 1px solid var(--awake-blue); color: var(--awake-blue);
             background: transparent; font-size: 11px; letter-spacing: 0.5em; cursor: pointer;
             transition: all 0.4s; text-transform: uppercase; margin: 10px;
         }
         .btn:hover { background: var(--awake-blue); color: var(--void-black); box-shadow: 0 0 30px var(--awake-blue); }
+
         .status { margin-top: 20px; font-size: 9px; letter-spacing: 0.2em; opacity: 0.5; transition: color 0.3s; }
+
+        /* UI 文字标识 */
         .ui-text { position: absolute; left: 40px; mix-blend-mode: exclusion; pointer-events: none; z-index: 10; }
         .mellow-title { top: 40px; color: var(--awake-blue); font-size: 14px; letter-spacing: 0.6em; text-transform: uppercase; }
         .mellow-sub { bottom: 40px; color: var(--aurora-white); font-size: 9px; opacity: 0.5; letter-spacing: 0.3em; }
+
         #custom-cursor {
             width: 8px; height: 8px; background: var(--awake-blue); border-radius: 50%;
             position: fixed; pointer-events: none; z-index: 10000;
             filter: blur(1px); transition: transform 0.1s linear; opacity: 0.8;
-            margin-left: -4px; margin-top: -4px;
         }
     </style>
 </head>
@@ -66,10 +73,8 @@
         const cursor = document.getElementById('custom-cursor');
         const container = document.getElementById('canvas-container');
 
-        let scene, camera, renderer, candleShell, candleCore, particles;
-        let audioCtx, sourceNode, analyserNode, audioBuffer;
-        let isStarted = false;
-        const particleCount = 10000;
+        let scene, camera, renderer, candleShell, candleCore, sound, analyser, isStarted = false;
+        let particles, particleCount = 10000;
 
         window.addEventListener('mousemove', (e) => {
             cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
@@ -78,152 +83,167 @@
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 12;
+            camera.position.z = 12; // 稍微拉远，适应放大的蜡烛
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
             container.appendChild(renderer.domElement);
 
-            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-            const pt = new THREE.PointLight(0x83B3BE, 3, 50);
-            pt.position.set(5, 5, 5);
-            scene.add(pt);
-
+            // --- 蜡烛实体设计 (尺度放大 3 倍) ---
             const candleGroup = new THREE.Group();
-            const coreGeo = new THREE.CylinderGeometry(1.2, 1.2, 8.4, 32);
-            const coreMat = new THREE.MeshStandardMaterial({ color: 0x4A5B61, metalness: 0.9, roughness: 0.1 });
+            
+            // 内芯：深页岩蓝金属
+            const coreGeo = new THREE.CylinderGeometry(1.2, 1.2, 8.4, 32); // 放大 3 倍
+            const coreMat = new THREE.MeshStandardMaterial({
+                color: 0x4A5B61, metalness: 0.9, roughness: 0.1
+            });
             candleCore = new THREE.Mesh(coreGeo, coreMat);
-
-            const shellGeo = new THREE.CylinderGeometry(3, 3, 9, 64);
+            
+            // 外壳：书本雾蓝磨砂
+            const shellGeo = new THREE.CylinderGeometry(3, 3, 9, 64); // 放大 3 倍
             const shellMat = new THREE.MeshPhysicalMaterial({
-                color: 0x83B3BE, transmission: 0.8, roughness: 0.14, thickness: 6,
+                color: 0x83B3BE, transmission: 0.8, roughness: 0.14, thickness: 6, // thickness 随尺度增加
                 transparent: true, opacity: 0.9, emissive: 0x83B3BE, emissiveIntensity: 0.1
             });
             candleShell = new THREE.Mesh(shellGeo, shellMat);
+            
             candleGroup.add(candleCore, candleShell);
             scene.add(candleGroup);
 
+            // --- 梦幻粒子系统 (告别方块与直线) ---
             createCosmicParticles();
-            setupAudio();
+
+            // --- 频率混音引擎 ( 修复增益与 EQ 噪音 ) ---
+            setupAudio(camera);
+
             animate();
         }
 
         function createCosmicParticles() {
+            // 动态生成圆形发光贴图
             const canvas = document.createElement('canvas');
             canvas.width = 64; canvas.height = 64;
-            const ctx = canvas.getContext('2d');
-            const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-            gradient.addColorStop(0, 'rgba(242, 242, 242, 1)');
-            gradient.addColorStop(0.2, 'rgba(131, 179, 190, 0.8)');
-            gradient.addColorStop(0.6, 'rgba(26, 28, 32, 0)');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, 64, 64);
+            const context = canvas.getContext('2d');
+            const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+            gradient.addColorStop(0, 'rgba(242, 242, 242, 1)'); // #F2F2F2
+            gradient.addColorStop(0.2, 'rgba(131, 179, 190, 0.8)'); // #83B3BE
+            gradient.addColorStop(0.6, 'rgba(26, 28, 32, 0)'); // 透明边缘
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, 64, 64);
             const particleTexture = new THREE.CanvasTexture(canvas);
 
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(particleCount * 3);
-            for (let i = 0; i < particleCount * 3; i++) positions[i] = (Math.random() - 0.5) * 40;
+            
+            // 随机球形分布，围绕蜡烛
+            for (let i = 0; i < particleCount * 3; i++) {
+                positions[i] = (Math.random() - 0.5) * 40; // 扩大分布范围，适应放大的蜡烛
+            }
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
-            particles = new THREE.Points(geometry, new THREE.PointsMaterial({
-                size: 0.4, map: particleTexture, transparent: true, opacity: 0.7,
-                blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
-            }));
+            const material = new THREE.PointsMaterial({
+                size: 0.4,
+                map: particleTexture, // 强制加载发光圆点贴图
+                transparent: true,
+                opacity: 0.7,
+                blending: THREE.AdditiveBlending, // 加法混合，产生梦幻感
+                depthWrite: false, // 防止遮挡，保持透明感
+                sizeAttenuation: true // 粒子随距离缩放
+            });
+
+            particles = new THREE.Points(geometry, material);
             scene.add(particles);
         }
 
-        function setupAudio() {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function setupAudio(camera) {
+            const listener = new THREE.AudioListener();
+            camera.add(listener);
+            sound = new THREE.Audio(listener);
 
-            // 低频切除：压雨声（300Hz 以下切掉）
-            const lowCut = audioCtx.createBiquadFilter();
-            lowCut.type = 'highpass';
-            lowCut.frequency.value = 300;
+            const context = listener.context;
+            
+            // 1. 创建增益节点 (总功率 修复静默噪音)
+            const mainGain = context.createGain();
+            mainGain.gain.setValueAtTime(1.0, context.currentTime); // 初始音量 1.0
 
-            // 旋律增强：3500Hz 人声/旋律段提升
-            const midBoost = audioCtx.createBiquadFilter();
-            midBoost.type = 'peaking';
-            midBoost.frequency.value = 3500;
-            midBoost.Q.value = 1.0;
-            midBoost.gain.value = 12;
+            // 2. 创建均衡器：旋律增强 ( 修复 EQ 噪音 )
+            const midBoost = context.createBiquadFilter();
+            midBoost.type = "peaking";
+            midBoost.frequency.setValueAtTime(2000, context.currentTime); 
+            midBoost.Q.setValueAtTime(1.5, context.currentTime);        
+            midBoost.gain.setValueAtTime(8, context.currentTime);        
 
-            // 增益：6x
-            const gainNode = audioCtx.createGain();
-            gainNode.gain.value = 6.0;
+            // 魏珏然，在这里调参：
+            // 1.0 = 原始音量
+            // 3.0 = 极致增益
+            // 5.0 = 震碎现实
+            const musicGain = context.createGain();
+            musicGain.gain.setValueAtTime(3.5, context.currentTime); // 3.5x Power
 
-            analyserNode = audioCtx.createAnalyser();
-            analyserNode.fftSize = 32;
+            // 建立混音链条：Source -> Gain -> EQ -> MainGain -> Output
+            sound.setNodeSource(mainGain);
+            mainGain.connect(midBoost);
+            midBoost.connect(musicGain);
+            musicGain.connect(context.destination);
 
-            // 链：source → lowCut → midBoost → gainNode → analyserNode → destination
-            lowCut.connect(midBoost);
-            midBoost.connect(gainNode);
-            gainNode.connect(analyserNode);
-            analyserNode.connect(audioCtx.destination);
-            window._chainHead = lowCut;
+            const audioLoader = new THREE.AudioLoader();
+            const audioPath = 'https://mellowwei.github.io/AstroTimeCandle/winter_sun.m4a?v=' + Date.now();
 
-            fetch('https://mellowwei.github.io/AstroTimeCandle/winter_sun.m4a')
-                .then(res => res.arrayBuffer())
-                .then(buf => audioCtx.decodeAudioData(buf))
-                .then(decoded => {
-                    audioBuffer = decoded;
-                    statusText.innerText = '724Hz ALIGNED. READY TO AWAKE.';
-                    statusText.style.color = '#83B3BE';
-                    statusText.style.opacity = '1';
-                    console.log('[724Hz] decoded. Ready.');
-                })
-                .catch(err => {
-                    console.error('[724Hz] Audio error:', err);
-                    statusText.innerText = 'AUDIO UNAVAILABLE — VISUAL MODE';
-                    statusText.style.color = '#FFBB00';
-                    statusText.style.opacity = '1';
-                    enterBtn.innerText = 'ENTER (SILENT)';
-                });
-        }
+            audioLoader.load(audioPath, (buffer) => {
+                sound.setBuffer(buffer);
+                sound.setLoop(true);
+                statusText.innerText = "724Hz ALIGNED. POWER BOOST ACTIVE.";
+                statusText.style.color = "#83B3BE";
+                console.log("[724Hz] winter_sun.m4a 装填完毕");
+            }, (xhr) => {
+                statusText.innerText = "LOADING: " + Math.round(xhr.loaded / xhr.total * 100) + "%";
+            }, (err) => {
+                statusText.innerText = "SOURCE ERROR. RECHECK FILES.";
+                statusText.style.color = "#FF4444";
+            });
 
-        function getFrequency() {
-            if (!analyserNode) return 0;
-            const data = new Uint8Array(analyserNode.frequencyBinCount);
-            analyserNode.getByteFrequencyData(data);
-            return data.reduce((a, b) => a + b, 0) / data.length;
+            analyser = new THREE.AudioAnalyser(sound, 32);
         }
 
         function animate() {
             requestAnimationFrame(animate);
-            if (candleShell) candleShell.rotation.y += 0.00724;
+            if(candleShell) candleShell.rotation.y += 0.00724;
+            
+            // 梦幻粒子随机漂移
             if (particles) {
                 particles.rotation.y += 0.001;
                 particles.rotation.z += 0.0005;
             }
-            if (isStarted) {
-                const freq = getFrequency();
-                if (candleShell) candleShell.material.emissiveIntensity = 0.1 + (freq / 100);
+
+            if (isStarted && analyser) {
+                const freq = analyser.getAverageFrequency();
+                candleShell.material.emissiveIntensity = 0.1 + (freq / 100);
             }
             renderer.render(scene, camera);
         }
 
         enterBtn.addEventListener('click', async () => {
-            if (isStarted) return;
-            isStarted = true;
-
-            if (audioCtx && audioCtx.state === 'suspended') {
-                await audioCtx.resume();
+            const context = THREE.AudioContext.getContext();
+            
+            // 暴力唤醒 AudioContext ( 修复声音静默逻辑 )
+            if (context.state === 'suspended') {
+                await context.resume();
+                console.log("AudioContext 强行激活");
             }
-
-            if (audioBuffer) {
-                sourceNode = audioCtx.createBufferSource();
-                sourceNode.buffer = audioBuffer;
-                sourceNode.loop = true;
-                sourceNode.connect(window._chainHead);
-                sourceNode.start(0);
+            
+            if (sound && sound.buffer) {
+                isStarted = true;
+                sound.play();
+                document.getElementById('overlay-entry').style.opacity = '0';
+                setTimeout(() => document.getElementById('overlay-entry').remove(), 1200);
+            } else {
+                // 如果没加载完，强行提示
+                statusText.innerText = "WAITING FOR SOURCE...";
             }
-
-            entry.style.opacity = '0';
-            setTimeout(() => entry.style.display = 'none', 1200);
         });
 
         init();
-
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
