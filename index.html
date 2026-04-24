@@ -1,286 +1,546 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Astro Time Candle</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ASTRO AWAKE | Astro Time Candle</title>
 
-<style>
-:root {
-  --blue: #83B3BE;
-  --white: #F2F2F2;
-  --black: #1A1C20;
-}
+  <style>
+    :root {
+      --awake-blue: #83B3BE;
+      --aurora-white: #F2F2F2;
+      --void-black: #1A1C20;
+    }
 
-* { margin:0; padding:0; box-sizing:border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-body {
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:var(--black);
-  color:var(--white);
-  font-family: Inter, sans-serif;
-}
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--void-black);
+      color: var(--aurora-white);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+      cursor: none;
+    }
 
-/* 粒子层 */
-#canvas {
-  position:fixed;
-  inset:0;
-  z-index:0;
-}
+    #canvas-container {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
 
-/* 产品图片 */
-#product {
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  width:min(42vw,520px);
-  z-index:2;
-  pointer-events:none;
-  opacity:0;
+    #custom-cursor {
+      width: 8px;
+      height: 8px;
+      background: var(--awake-blue);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 10000;
+      filter: blur(1px);
+      transition: transform 0.1s linear;
+      opacity: 0.8;
+    }
 
-  filter:
-    drop-shadow(0 0 40px rgba(131,179,190,0.35))
-    drop-shadow(0 0 120px rgba(131,179,190,0.2));
+    #overlay-entry {
+      position: fixed;
+      inset: 0;
+      background: var(--void-black);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-  transition: all 1.2s ease;
-}
+    .btn {
+      padding: 12px 40px;
+      border: 1px solid var(--awake-blue);
+      color: var(--awake-blue);
+      background: transparent;
+      font-size: 11px;
+      letter-spacing: 0.5em;
+      cursor: pointer;
+      transition: all 0.4s;
+      text-transform: uppercase;
+      margin: 10px;
+    }
 
-body.started #product {
-  opacity:1;
-}
+    .btn:hover {
+      background: var(--awake-blue);
+      color: var(--void-black);
+      box-shadow: 0 0 30px var(--awake-blue);
+    }
 
-/* 进入层 */
-#enter {
-  position:fixed;
-  inset:0;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  background:var(--black);
-  z-index:10;
-}
+    .status {
+      margin-top: 20px;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      opacity: 0.35;
+    }
 
-button {
-  border:1px solid var(--blue);
-  color:var(--blue);
-  background:none;
-  padding:12px 40px;
-  letter-spacing:0.5em;
-  cursor:pointer;
-}
+    .ui-text {
+      position: fixed;
+      left: 40px;
+      mix-blend-mode: exclusion;
+      pointer-events: none;
+      z-index: 10;
+    }
 
-button:hover {
-  background:var(--blue);
-  color:black;
-}
+    .mellow-title {
+      top: 40px;
+      color: var(--awake-blue);
+      font-size: 14px;
+      letter-spacing: 0.6em;
+      text-transform: uppercase;
+    }
 
-/* 文案层 */
-#panel {
-  position:fixed;
-  inset:0;
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:3;
-}
+    .mellow-sub {
+      bottom: 40px;
+      color: var(--aurora-white);
+      font-size: 9px;
+      opacity: 0.5;
+      letter-spacing: 0.3em;
+    }
 
-.card {
-  position:absolute;
-  text-align:center;
-  max-width:700px;
+    #intro-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      background: radial-gradient(circle, rgba(26,28,32,0.10) 0%, rgba(26,28,32,0.72) 100%);
+      backdrop-filter: blur(4px);
+    }
 
-  opacity:0;
-  transform:translateY(40px);
-  filter:blur(10px);
+    .copy-card {
+      max-width: 680px;
+      padding: 0 32px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+      position: absolute;
+    }
 
-  transition: all .6s ease;
-}
+    .copy-card.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
 
-.card.active {
-  opacity:1;
-  transform:translateY(0);
-  filter:blur(0);
-}
+    .copy-index {
+      color: var(--awake-blue);
+      font-size: 11px;
+      letter-spacing: 0.5em;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+    }
 
-.card.exit {
-  opacity:0;
-  transform:translateY(-40px);
-  filter:blur(12px);
-}
+    .copy-title {
+      color: var(--awake-blue);
+      font-size: 28px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      margin-bottom: 26px;
+    }
 
-h1 {
-  color:var(--blue);
-  letter-spacing:.3em;
-  margin-bottom:20px;
-}
+    .copy-body {
+      font-size: 15px;
+      line-height: 2;
+      letter-spacing: 0.08em;
+      opacity: 0.82;
+    }
 
-p {
-  line-height:1.8;
-  opacity:.8;
-}
+    #scroll-hint {
+      position: fixed;
+      bottom: 58px;
+      right: 40px;
+      z-index: 30;
+      font-size: 9px;
+      letter-spacing: 0.35em;
+      color: var(--awake-blue);
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
 
-/* 滚动提示 */
-#hint {
-  position:fixed;
-  bottom:40px;
-  right:40px;
-  font-size:10px;
-  letter-spacing:.3em;
-  color:var(--blue);
-  opacity:0;
-}
+    #progress-dots {
+      position: fixed;
+      right: 42px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 30;
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+    }
 
-/* dots */
-#dots {
-  position:fixed;
-  right:40px;
-  top:50%;
-  transform:translateY(-50%);
-  display:none;
-}
+    .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--aurora-white);
+      opacity: 0.25;
+      transition: all 0.3s ease;
+    }
 
-.dot {
-  width:6px;
-  height:6px;
-  background:white;
-  opacity:.2;
-  border-radius:50%;
-  margin:10px 0;
-}
+    .dot.active {
+      background: var(--awake-blue);
+      opacity: 1;
+      box-shadow: 0 0 12px var(--awake-blue);
+    }
 
-.dot.active {
-  background:var(--blue);
-  opacity:1;
-}
-</style>
+    @media (max-width: 768px) {
+      .mellow-title { left: 20px; top: 20px; font-size: 11px; letter-spacing: 0.35em; }
+      .mellow-sub { left: 20px; bottom: 20px; font-size: 8px; letter-spacing: 0.18em; }
+      .copy-title { font-size: 20px; letter-spacing: 0.16em; }
+      .copy-body { font-size: 13px; }
+      #progress-dots { right: 22px; }
+      #scroll-hint { right: 22px; bottom: 36px; }
+    }
+  </style>
 </head>
 
 <body>
+  <div id="custom-cursor"></div>
+  <div id="canvas-container"></div>
 
-<canvas id="canvas"></canvas>
+  <audio id="bg-audio" preload="auto" loop playsinline webkit-playsinline crossorigin="anonymous">
+    <source src="https://mellowwei.github.io/AstroTimeCandle/winter_sun.m4a" type="audio/mp4" />
+  </audio>
 
-<!-- 产品图片 -->
-<img id="product" src="./Astro%20Time%20Candle.png" />
+  <div id="overlay-entry">
+    <div style="margin-bottom: 30px; width: 1px; height: 60px; background: var(--awake-blue); opacity: 0.4;"></div>
+    <button id="enter-btn" class="btn">ENTER 724Hz</button>
+    <p id="status-text" class="status">CALIBRATING FREQUENCY...</p>
+  </div>
 
-<!-- 音频 -->
-<audio id="audio" loop>
-  <source src="https://mellowwei.github.io/AstroTimeCandle/winter_sun.m4a" type="audio/mp4">
-</audio>
+  <div id="intro-panel">
+    <div class="copy-card active">
+      <div class="copy-index">00 / Definition</div>
+      <h1 class="copy-title">Astro Time Candle</h1>
+      <p class="copy-body">
+        Time, Revealed — Not Counted.<br>
+        A self-consuming body that transforms time into a visible process of revelation.
+      </p>
+    </div>
 
-<!-- 进入 -->
-<div id="enter">
-  <button id="start">ENTER</button>
-</div>
+    <div class="copy-card">
+      <div class="copy-index">01 / Mechanism</div>
+      <h1 class="copy-title">How Time Becomes Visible</h1>
+      <p class="copy-body">
+        As the outer wax melts, a stable inner core begins to emerge.<br>
+        You are not watching time disappear. You are watching what remains become visible.
+      </p>
+    </div>
 
-<!-- 文案 -->
-<div id="panel">
+    <div class="copy-card">
+      <div class="copy-index">02 / No Vessel</div>
+      <h1 class="copy-title">Structural Sovereignty</h1>
+      <p class="copy-body">
+        This is not a candle inside a container.<br>
+        The body itself is the boundary. It bears time directly.
+      </p>
+    </div>
 
-<div class="card active">
-<h1>ASTRO TIME CANDLE</h1>
-<p>Time, Revealed — Not Counted.</p>
-</div>
+    <div class="copy-card">
+      <div class="copy-index">03 / Contract</div>
+      <h1 class="copy-title">The Qualia Contract</h1>
+      <p class="copy-body">
+        Heat, duration, and attention become a filter.<br>
+        What emerges is not decoration. It is evidence.
+      </p>
+    </div>
 
-<div class="card">
-<h1>MECHANISM</h1>
-<p>The outer wax yields.  
-The inner truth appears.</p>
-</div>
+    <div class="copy-card">
+      <div class="copy-index">04 / Use Case</div>
+      <h1 class="copy-title">When It Matters</h1>
+      <p class="copy-body">
+        Late-night study. Exam week. Sustained focus.<br>
+        Moments when time becomes abstract, and attention needs an anchor.
+      </p>
+    </div>
 
-<div class="card">
-<h1>NO VESSEL</h1>
-<p>The body itself is the boundary.</p>
-</div>
+    <div class="copy-card">
+      <div class="copy-index">05 / Interface</div>
+      <h1 class="copy-title">Revelation Interface</h1>
+      <p class="copy-body">
+        This website is a digital echo of the physical process.<br>
+        A portal where perception aligns before the object is touched.
+      </p>
+    </div>
+  </div>
 
-<div class="card">
-<h1>CONTRACT</h1>
-<p>Time observes you.</p>
-</div>
+  <div id="progress-dots"></div>
+  <div id="scroll-hint">Scroll to reveal</div>
 
-<div class="card">
-<h1>USE</h1>
-<p>Focus. Night. Duration.</p>
-</div>
+  <div class="ui-text mellow-title">Astro Time Candle</div>
+  <div class="ui-text mellow-sub">Architect: Wei Jueran | Philadelphia | 14.0°C</div>
 
-</div>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.161.0/build/three.module.js"
+    }
+  }
+  </script>
 
-<div id="dots"></div>
-<div id="hint">SCROLL</div>
+  <script type="module">
+    import * as THREE from 'three';
 
-<script>
-const startBtn = document.getElementById('start');
-const enter = document.getElementById('enter');
-const panel = document.getElementById('panel');
-const cards = document.querySelectorAll('.card');
-const dotsWrap = document.getElementById('dots');
-const hint = document.getElementById('hint');
-const audio = document.getElementById('audio');
+    const container = document.getElementById('canvas-container');
+    const entry = document.getElementById('overlay-entry');
+    const enterBtn = document.getElementById('enter-btn');
+    const statusText = document.getElementById('status-text');
+    const cursor = document.getElementById('custom-cursor');
+    const introPanel = document.getElementById('intro-panel');
+    const cards = Array.from(document.querySelectorAll('.copy-card'));
+    const dotsWrap = document.getElementById('progress-dots');
+    const scrollHint = document.getElementById('scroll-hint');
+    const bgAudio = document.getElementById('bg-audio');
 
-let index = 0;
-let locked = false;
+    let scene, camera, renderer, candleShell, candleCore, particles;
+    let isStarted = false;
+    let currentIndex = 0;
+    let wheelLocked = false;
 
-/* dots */
-cards.forEach((_,i)=>{
-  const d=document.createElement('div');
-  d.className='dot'+(i===0?' active':'');
-  dotsWrap.appendChild(d);
-});
+    let audioContext = null;
+    let analyser = null;
+    let sourceNode = null;
+    let gainNode = null;
+    let dataArray = null;
+    let audioGraphReady = false;
 
-const dots=document.querySelectorAll('.dot');
+    cards.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = i === 0 ? 'dot active' : 'dot';
+      dotsWrap.appendChild(dot);
+    });
+    const dots = Array.from(document.querySelectorAll('.dot'));
 
-/* start */
-startBtn.onclick = async ()=>{
-  document.body.classList.add('started');
-
-  enter.style.opacity=0;
-  setTimeout(()=>enter.remove(),800);
-
-  panel.style.display='flex';
-  dotsWrap.style.display='block';
-  hint.style.opacity=.8;
-
-  try{
-    await audio.play();
-  }catch(e){}
-};
-
-/* 切换 */
-function show(i){
-  if(i<0||i>=cards.length)return;
-
-  const current = cards[index];
-  const next = cards[i];
-
-  current.classList.remove('active');
-  current.classList.add('exit');
-
-  setTimeout(()=>{
-    current.classList.remove('exit');
-
-    next.classList.add('active');
-    index=i;
-
-    dots.forEach((d,k)=>{
-      d.classList.toggle('active',k===index);
+    window.addEventListener('mousemove', (e) => {
+      cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
     });
 
-  },400);
-}
+    function initVisuals() {
+      scene = new THREE.Scene();
 
-/* 滚轮 */
-window.addEventListener('wheel',(e)=>{
-  if(locked)return;
-  locked=true;
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 15;
 
-  if(e.deltaY>0) show(index+1);
-  else show(index-1);
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
 
-  setTimeout(()=>locked=false,700);
-});
-</script>
+      const candleGroup = new THREE.Group();
 
+      candleCore = new THREE.Mesh(
+        new THREE.CylinderGeometry(1.2, 1.2, 8.4, 32),
+        new THREE.MeshStandardMaterial({
+          color: 0x4A5B61,
+          metalness: 0.9,
+          roughness: 0.1
+        })
+      );
+
+      candleShell = new THREE.Mesh(
+        new THREE.CylinderGeometry(3, 3, 9, 64),
+        new THREE.MeshPhysicalMaterial({
+          color: 0x83B3BE,
+          transmission: 0.8,
+          roughness: 0.14,
+          thickness: 6,
+          transparent: true,
+          opacity: 0.9,
+          emissive: 0x83B3BE,
+          emissiveIntensity: 0.1
+        })
+      );
+
+      candleGroup.add(candleCore, candleShell);
+      scene.add(candleGroup);
+
+      const light = new THREE.PointLight(0x83B3BE, 2, 80);
+      light.position.set(0, 5, 8);
+      scene.add(light);
+
+      const ambient = new THREE.AmbientLight(0x83B3BE, 0.35);
+      scene.add(ambient);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 64;
+      canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0, 'rgba(242,242,242,1)');
+      grad.addColorStop(0.2, 'rgba(131,179,190,0.6)');
+      grad.addColorStop(0.6, 'rgba(26,28,32,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 64, 64);
+
+      const tex = new THREE.CanvasTexture(canvas);
+      const geo = new THREE.BufferGeometry();
+      const pos = new Float32Array(10000 * 3);
+      for (let i = 0; i < pos.length; i++) pos[i] = (Math.random() - 0.5) * 80;
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+
+      particles = new THREE.Points(
+        geo,
+        new THREE.PointsMaterial({
+          size: 0.6,
+          map: tex,
+          transparent: true,
+          opacity: 0.6,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+          sizeAttenuation: true
+        })
+      );
+      scene.add(particles);
+
+      animate();
+    }
+
+    function setupAudioGraph() {
+      if (audioGraphReady) return;
+
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      audioContext = new AudioCtx();
+
+      sourceNode = audioContext.createMediaElementSource(bgAudio);
+      analyser = audioContext.createAnalyser();
+      gainNode = audioContext.createGain();
+
+      analyser.fftSize = 64;
+      analyser.smoothingTimeConstant = 0.8;
+      gainNode.gain.value = 2.2;
+
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+      sourceNode.connect(gainNode);
+      gainNode.connect(analyser);
+      analyser.connect(audioContext.destination);
+
+      audioGraphReady = true;
+    }
+
+    function getAverageFrequency() {
+      if (!analyser || !dataArray) return 0;
+      analyser.getByteFrequencyData(dataArray);
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+      return sum / dataArray.length;
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      if (candleShell) candleShell.rotation.y += 0.00724;
+      if (candleCore) candleCore.rotation.y -= 0.003;
+      if (particles) {
+        particles.rotation.y += 0.0003;
+        particles.rotation.x += 0.0001;
+      }
+
+      if (isStarted && analyser && candleShell) {
+        const freq = getAverageFrequency();
+        candleShell.material.emissiveIntensity = 0.1 + freq / 80;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    function showCard(index) {
+      currentIndex = Math.max(0, Math.min(cards.length - 1, index));
+
+      cards.forEach((card, i) => {
+        card.classList.toggle('active', i === currentIndex);
+      });
+
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIndex);
+      });
+    }
+
+    function handleWheel(e) {
+      if (!isStarted) return;
+      e.preventDefault();
+
+      if (wheelLocked) return;
+      wheelLocked = true;
+
+      if (e.deltaY > 0) {
+        showCard(currentIndex + 1);
+      } else if (e.deltaY < 0) {
+        showCard(currentIndex - 1);
+      }
+
+      setTimeout(() => {
+        wheelLocked = false;
+      }, 650);
+    }
+
+    async function startExperience() {
+      try {
+        isStarted = true;
+
+        setupAudioGraph();
+
+        if (audioContext && audioContext.state === 'suspended') {
+          await audioContext.resume();
+        }
+
+        bgAudio.volume = 1.0;
+        await bgAudio.play();
+
+        entry.style.opacity = '0';
+
+        setTimeout(() => {
+          entry.remove();
+          introPanel.style.display = 'flex';
+          dotsWrap.style.display = 'flex';
+          scrollHint.style.opacity = '0.8';
+
+          setTimeout(() => {
+            scrollHint.style.opacity = '0.35';
+          }, 1800);
+        }, 1200);
+
+      } catch (err) {
+        console.error(err);
+        statusText.innerText = 'AUDIO PLAYBACK BLOCKED.';
+        statusText.style.color = '#FF4444';
+      }
+    }
+
+    bgAudio.addEventListener('canplaythrough', () => {
+      statusText.innerText = '724Hz FREQUENCY ALIGNED.';
+      statusText.style.color = '#83B3BE';
+    });
+
+    bgAudio.addEventListener('error', () => {
+      statusText.innerText = 'AUDIO LOAD ERROR.';
+      statusText.style.color = '#FF4444';
+    });
+
+    enterBtn.addEventListener('click', startExperience);
+    window.addEventListener('wheel', handleWheel, { passive: false });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    initVisuals();
+    bgAudio.load();
+  </script>
 </body>
 </html>
