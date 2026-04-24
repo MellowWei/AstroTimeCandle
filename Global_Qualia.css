@@ -1,44 +1,265 @@
-/* 724Hz 视觉主权协议 */
-:root {
-  --awake-blue: #83B3BE;     /* 书本雾蓝 */
-  --slate-deep: #4A5B61;     /* 深页岩蓝 */
-  --cement-grey: #96A4A5;    /* 水泥灰 */
-  --aurora-white: #F2F2F2;   /* 极光白 */
-  --oat-grey: #D9C5B2;       /* 燕麦灰 */
-  --void-black: #1A1C20;     /* 绝对黑洞 */
-}
+<style>
+  :root {
+    --awake-blue: #83B3BE;
+    --aurora-white: #F2F2F2;
+    --void-black: #1A1C20;
+    --slate-deep: #4A5B61;
+  }
 
-body {
-  margin: 0;
-  background-color: var(--void-black);
-  color: var(--aurora-white);
-  font-family: 'Inter', -apple-system, sans-serif;
-  overflow: hidden; /* 屏蔽滚动噪音 */
-  cursor: none;    /* 自定义引力光标 */
-}
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-.canvas-container {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: radial-gradient(circle at center, var(--slate-deep) 0%, var(--void-black) 100%);
-}
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--void-black);
+    color: var(--aurora-white);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+    cursor: none;
+  }
 
-.ui-overlay {
-  position: absolute;
-  top: 40px;
-  left: 40px;
-  border-left: 1px solid var(--awake-blue);
-  padding-left: 20px;
-  mix-blend-mode: difference;
-}
+  #canvas-container {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
 
-.mellow-text {
-  font-size: 10px;
-  letter-spacing: 0.5em;
-  text-transform: uppercase;
-  color: var(--awake-blue);
-  opacity: 0.7;
-}
+  #custom-cursor {
+    width: 8px;
+    height: 8px;
+    background: var(--awake-blue);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 10000;
+    filter: blur(1px);
+    transition: transform 0.1s linear;
+    opacity: 0.8;
+  }
+
+  #overlay-entry {
+    position: fixed;
+    inset: 0;
+    background: var(--void-black);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn {
+    padding: 12px 40px;
+    border: 1px solid var(--awake-blue);
+    color: var(--awake-blue);
+    background: transparent;
+    font-size: 11px;
+    letter-spacing: 0.5em;
+    cursor: pointer;
+    transition: all 0.4s;
+    text-transform: uppercase;
+    margin: 10px;
+  }
+
+  .btn:hover {
+    background: var(--awake-blue);
+    color: var(--void-black);
+    box-shadow: 0 0 30px var(--awake-blue);
+  }
+
+  .status {
+    margin-top: 20px;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    opacity: 0.35;
+    transition: color 0.3s ease;
+  }
+
+  .ui-text {
+    position: fixed;
+    left: 40px;
+    mix-blend-mode: exclusion;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .mellow-title {
+    top: 40px;
+    color: var(--awake-blue);
+    font-size: 14px;
+    letter-spacing: 0.6em;
+    text-transform: uppercase;
+  }
+
+  .mellow-sub {
+    bottom: 40px;
+    color: var(--aurora-white);
+    font-size: 9px;
+    opacity: 0.5;
+    letter-spacing: 0.3em;
+  }
+
+  #intro-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    background: radial-gradient(
+      circle,
+      rgba(26, 28, 32, 0.10) 0%,
+      rgba(26, 28, 32, 0.72) 100%
+    );
+    backdrop-filter: blur(4px);
+  }
+
+  .copy-card {
+    max-width: 680px;
+    padding: 0 32px;
+    text-align: center;
+    position: absolute;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transform: translateY(40px) scale(0.96);
+    filter: blur(10px);
+
+    transition:
+      opacity 0.5s ease,
+      transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 0.6s ease,
+      visibility 0s linear 0.5s;
+  }
+
+  .copy-card.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+    transition:
+      opacity 0.55s ease,
+      transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 0.65s ease,
+      visibility 0s;
+  }
+
+  .copy-card.exit {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-34px) scale(0.96);
+    filter: blur(12px);
+  }
+
+  .copy-index {
+    color: var(--awake-blue);
+    font-size: 11px;
+    letter-spacing: 0.5em;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+  }
+
+  .copy-title {
+    color: var(--awake-blue);
+    font-size: 28px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    margin-bottom: 26px;
+  }
+
+  .copy-body {
+    font-size: 15px;
+    line-height: 2;
+    letter-spacing: 0.08em;
+    opacity: 0.82;
+  }
+
+  #scroll-hint {
+    position: fixed;
+    bottom: 58px;
+    right: 40px;
+    z-index: 30;
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    color: var(--awake-blue);
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  #progress-dots {
+    position: fixed;
+    right: 42px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 30;
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--aurora-white);
+    opacity: 0.25;
+    transition: all 0.3s ease;
+  }
+
+  .dot.active {
+    background: var(--awake-blue);
+    opacity: 1;
+    box-shadow: 0 0 12px var(--awake-blue);
+  }
+
+  @media (max-width: 768px) {
+    .mellow-title {
+      left: 20px;
+      top: 20px;
+      font-size: 11px;
+      letter-spacing: 0.35em;
+    }
+
+    .mellow-sub {
+      left: 20px;
+      bottom: 20px;
+      font-size: 8px;
+      letter-spacing: 0.18em;
+    }
+
+    .copy-title {
+      font-size: 20px;
+      letter-spacing: 0.16em;
+    }
+
+    .copy-body {
+      font-size: 13px;
+      line-height: 1.9;
+    }
+
+    .copy-index {
+      font-size: 9px;
+      letter-spacing: 0.35em;
+    }
+
+    #progress-dots {
+      right: 22px;
+    }
+
+    #scroll-hint {
+      right: 22px;
+      bottom: 36px;
+    }
+  }
+</style>
