@@ -10,6 +10,7 @@
       --awake-blue: #83B3BE;
       --aurora-white: #F2F2F2;
       --void-black: #1A1C20;
+      --slate-deep: #4A5B61;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -29,6 +30,29 @@
       inset: 0;
       z-index: 0;
       pointer-events: none;
+    }
+
+    #candle-product-img {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      width: min(42vw, 520px);
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      pointer-events: none;
+      filter:
+        drop-shadow(0 0 28px rgba(131, 179, 190, 0.35))
+        drop-shadow(0 0 80px rgba(131, 179, 190, 0.16));
+      opacity: 0;
+      transition:
+        opacity 1.2s ease,
+        transform 1.2s cubic-bezier(0.22, 1, 0.36, 1),
+        filter 1.2s ease;
+    }
+
+    body.started #candle-product-img {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
     }
 
     #custom-cursor {
@@ -80,6 +104,7 @@
       font-size: 9px;
       letter-spacing: 0.2em;
       opacity: 0.35;
+      transition: color 0.3s ease;
     }
 
     .ui-text {
@@ -114,23 +139,48 @@
       align-items: center;
       justify-content: center;
       pointer-events: none;
-      background: radial-gradient(circle, rgba(26,28,32,0.10) 0%, rgba(26,28,32,0.72) 100%);
-      backdrop-filter: blur(4px);
+      background: radial-gradient(
+        circle,
+        rgba(26, 28, 32, 0.05) 0%,
+        rgba(26, 28, 32, 0.55) 100%
+      );
+      backdrop-filter: blur(2px);
     }
 
     .copy-card {
       max-width: 680px;
       padding: 0 32px;
       text-align: center;
-      opacity: 0;
-      transform: translateY(18px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
       position: absolute;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(40px) scale(0.96);
+      filter: blur(10px);
+      transition:
+        opacity 0.5s ease,
+        transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+        filter 0.6s ease,
+        visibility 0s linear 0.5s;
     }
 
     .copy-card.active {
       opacity: 1;
-      transform: translateY(0);
+      visibility: visible;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+      transition:
+        opacity 0.55s ease,
+        transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+        filter 0.65s ease,
+        visibility 0s;
+    }
+
+    .copy-card.exit {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-34px) scale(0.96);
+      filter: blur(12px);
     }
 
     .copy-index {
@@ -197,12 +247,47 @@
     }
 
     @media (max-width: 768px) {
-      .mellow-title { left: 20px; top: 20px; font-size: 11px; letter-spacing: 0.35em; }
-      .mellow-sub { left: 20px; bottom: 20px; font-size: 8px; letter-spacing: 0.18em; }
-      .copy-title { font-size: 20px; letter-spacing: 0.16em; }
-      .copy-body { font-size: 13px; }
-      #progress-dots { right: 22px; }
-      #scroll-hint { right: 22px; bottom: 36px; }
+      #candle-product-img {
+        width: min(70vw, 360px);
+      }
+
+      .mellow-title {
+        left: 20px;
+        top: 20px;
+        font-size: 11px;
+        letter-spacing: 0.35em;
+      }
+
+      .mellow-sub {
+        left: 20px;
+        bottom: 20px;
+        font-size: 8px;
+        letter-spacing: 0.18em;
+      }
+
+      .copy-title {
+        font-size: 20px;
+        letter-spacing: 0.16em;
+      }
+
+      .copy-body {
+        font-size: 13px;
+        line-height: 1.9;
+      }
+
+      .copy-index {
+        font-size: 9px;
+        letter-spacing: 0.35em;
+      }
+
+      #progress-dots {
+        right: 22px;
+      }
+
+      #scroll-hint {
+        right: 22px;
+        bottom: 36px;
+      }
     }
   </style>
 </head>
@@ -210,6 +295,12 @@
 <body>
   <div id="custom-cursor"></div>
   <div id="canvas-container"></div>
+
+  <img
+    id="candle-product-img"
+    src="./Astro%20Time%20Candle.jpeg"
+    alt="Astro Time Candle"
+  />
 
   <audio id="bg-audio" preload="auto" loop playsinline webkit-playsinline crossorigin="anonymous">
     <source src="https://mellowwei.github.io/AstroTimeCandle/winter_sun.m4a" type="audio/mp4" />
@@ -304,8 +395,9 @@
     const dotsWrap = document.getElementById('progress-dots');
     const scrollHint = document.getElementById('scroll-hint');
     const bgAudio = document.getElementById('bg-audio');
+    const productImg = document.getElementById('candle-product-img');
 
-    let scene, camera, renderer, candleShell, candleCore, particles;
+    let scene, camera, renderer, particles;
     let isStarted = false;
     let currentIndex = 0;
     let wheelLocked = false;
@@ -317,85 +409,83 @@
     let dataArray = null;
     let audioGraphReady = false;
 
-    cards.forEach((_, i) => {
-      const dot = document.createElement('div');
-      dot.className = i === 0 ? 'dot active' : 'dot';
-      dotsWrap.appendChild(dot);
-    });
-    const dots = Array.from(document.querySelectorAll('.dot'));
+    const dots = [];
 
     window.addEventListener('mousemove', (e) => {
-      cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+      if (cursor) {
+        cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+      }
     });
+
+    function initDots() {
+      if (!dotsWrap) return;
+      dotsWrap.innerHTML = '';
+
+      cards.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = i === 0 ? 'dot active' : 'dot';
+        dotsWrap.appendChild(dot);
+        dots.push(dot);
+      });
+    }
 
     function initVisuals() {
       scene = new THREE.Scene();
 
-      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
       camera.position.z = 15;
 
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true
+      });
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       container.appendChild(renderer.domElement);
 
-      const candleGroup = new THREE.Group();
+      const pointLight = new THREE.PointLight(0x83B3BE, 2, 80);
+      pointLight.position.set(0, 5, 8);
+      scene.add(pointLight);
 
-      candleCore = new THREE.Mesh(
-        new THREE.CylinderGeometry(1.2, 1.2, 8.4, 32),
-        new THREE.MeshStandardMaterial({
-          color: 0x4A5B61,
-          metalness: 0.9,
-          roughness: 0.1
-        })
-      );
+      const ambientLight = new THREE.AmbientLight(0x83B3BE, 0.35);
+      scene.add(ambientLight);
 
-      candleShell = new THREE.Mesh(
-        new THREE.CylinderGeometry(3, 3, 9, 64),
-        new THREE.MeshPhysicalMaterial({
-          color: 0x83B3BE,
-          transmission: 0.8,
-          roughness: 0.14,
-          thickness: 6,
-          transparent: true,
-          opacity: 0.9,
-          emissive: 0x83B3BE,
-          emissiveIntensity: 0.1
-        })
-      );
+      const particleCanvas = document.createElement('canvas');
+      particleCanvas.width = 64;
+      particleCanvas.height = 64;
 
-      candleGroup.add(candleCore, candleShell);
-      scene.add(candleGroup);
-
-      const light = new THREE.PointLight(0x83B3BE, 2, 80);
-      light.position.set(0, 5, 8);
-      scene.add(light);
-
-      const ambient = new THREE.AmbientLight(0x83B3BE, 0.35);
-      scene.add(ambient);
-
-      const canvas = document.createElement('canvas');
-      canvas.width = 64;
-      canvas.height = 64;
-      const ctx = canvas.getContext('2d');
+      const ctx = particleCanvas.getContext('2d');
       const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
       grad.addColorStop(0, 'rgba(242,242,242,1)');
       grad.addColorStop(0.2, 'rgba(131,179,190,0.6)');
       grad.addColorStop(0.6, 'rgba(26,28,32,0)');
+
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 64, 64);
 
-      const tex = new THREE.CanvasTexture(canvas);
-      const geo = new THREE.BufferGeometry();
-      const pos = new Float32Array(10000 * 3);
-      for (let i = 0; i < pos.length; i++) pos[i] = (Math.random() - 0.5) * 80;
-      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      const particleTexture = new THREE.CanvasTexture(particleCanvas);
+      const particleGeo = new THREE.BufferGeometry();
+      const particlePositions = new Float32Array(10000 * 3);
+
+      for (let i = 0; i < particlePositions.length; i++) {
+        particlePositions[i] = (Math.random() - 0.5) * 80;
+      }
+
+      particleGeo.setAttribute(
+        'position',
+        new THREE.BufferAttribute(particlePositions, 3)
+      );
 
       particles = new THREE.Points(
-        geo,
+        particleGeo,
         new THREE.PointsMaterial({
           size: 0.6,
-          map: tex,
+          map: particleTexture,
           transparent: true,
           opacity: 0.6,
           blending: THREE.AdditiveBlending,
@@ -403,13 +493,14 @@
           sizeAttenuation: true
         })
       );
+
       scene.add(particles);
 
       animate();
     }
 
     function setupAudioGraph() {
-      if (audioGraphReady) return;
+      if (audioGraphReady || !bgAudio) return;
 
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       audioContext = new AudioCtx();
@@ -429,48 +520,73 @@
       analyser.connect(audioContext.destination);
 
       audioGraphReady = true;
+      console.log('Audio graph ready');
     }
 
     function getAverageFrequency() {
       if (!analyser || !dataArray) return 0;
+
       analyser.getByteFrequencyData(dataArray);
+
       let sum = 0;
-      for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+      for (let i = 0; i < dataArray.length; i++) {
+        sum += dataArray[i];
+      }
+
       return sum / dataArray.length;
     }
 
     function animate() {
       requestAnimationFrame(animate);
 
-      if (candleShell) candleShell.rotation.y += 0.00724;
-      if (candleCore) candleCore.rotation.y -= 0.003;
       if (particles) {
         particles.rotation.y += 0.0003;
         particles.rotation.x += 0.0001;
       }
 
-      if (isStarted && analyser && candleShell) {
+      if (isStarted && analyser && productImg) {
         const freq = getAverageFrequency();
-        candleShell.material.emissiveIntensity = 0.1 + freq / 80;
+        const glow = 0.20 + Math.min(freq / 180, 0.55);
+        productImg.style.filter =
+          `drop-shadow(0 0 ${28 + freq / 5}px rgba(131,179,190,${glow})) drop-shadow(0 0 80px rgba(131,179,190,0.16))`;
       }
 
-      renderer.render(scene, camera);
+      if (renderer && scene && camera) {
+        renderer.render(scene, camera);
+      }
     }
 
-    function showCard(index) {
-      currentIndex = Math.max(0, Math.min(cards.length - 1, index));
-
-      cards.forEach((card, i) => {
-        card.classList.toggle('active', i === currentIndex);
-      });
-
+    function updateDots() {
       dots.forEach((dot, i) => {
         dot.classList.toggle('active', i === currentIndex);
       });
     }
 
+    function showCard(index) {
+      const nextIndex = Math.max(0, Math.min(cards.length - 1, index));
+
+      if (nextIndex === currentIndex) return;
+      if (!cards[currentIndex] || !cards[nextIndex]) return;
+
+      const currentCard = cards[currentIndex];
+      const nextCard = cards[nextIndex];
+
+      currentCard.classList.remove('active');
+      currentCard.classList.add('exit');
+
+      setTimeout(() => {
+        currentCard.classList.remove('exit');
+
+        currentIndex = nextIndex;
+        nextCard.classList.add('active');
+
+        updateDots();
+      }, 430);
+    }
+
     function handleWheel(e) {
       if (!isStarted) return;
+
       e.preventDefault();
 
       if (wheelLocked) return;
@@ -484,12 +600,14 @@
 
       setTimeout(() => {
         wheelLocked = false;
-      }, 650);
+      }, 760);
     }
 
     async function startExperience() {
       try {
         isStarted = true;
+
+        document.body.classList.add('started');
 
         setupAudioGraph();
 
@@ -497,50 +615,91 @@
           await audioContext.resume();
         }
 
-        bgAudio.volume = 1.0;
-        await bgAudio.play();
+        if (bgAudio) {
+          bgAudio.volume = 1.0;
+          await bgAudio.play();
+        }
 
-        entry.style.opacity = '0';
+        if (entry) {
+          entry.style.opacity = '0';
+        }
 
         setTimeout(() => {
-          entry.remove();
-          introPanel.style.display = 'flex';
-          dotsWrap.style.display = 'flex';
-          scrollHint.style.opacity = '0.8';
+          if (entry) entry.remove();
 
-          setTimeout(() => {
-            scrollHint.style.opacity = '0.35';
-          }, 1800);
+          if (introPanel) {
+            introPanel.style.display = 'flex';
+          }
+
+          if (dotsWrap) {
+            dotsWrap.style.display = 'flex';
+          }
+
+          if (scrollHint) {
+            scrollHint.style.opacity = '0.8';
+
+            setTimeout(() => {
+              scrollHint.style.opacity = '0.35';
+            }, 1800);
+          }
+
+          if (cards[0]) {
+            cards.forEach((card, i) => {
+              card.classList.toggle('active', i === 0);
+              card.classList.remove('exit');
+            });
+          }
+
+          currentIndex = 0;
+          updateDots();
+
         }, 1200);
 
       } catch (err) {
-        console.error(err);
-        statusText.innerText = 'AUDIO PLAYBACK BLOCKED.';
-        statusText.style.color = '#FF4444';
+        console.error('Start failed:', err);
+
+        if (statusText) {
+          statusText.innerText = 'AUDIO PLAYBACK BLOCKED.';
+          statusText.style.color = '#FF4444';
+        }
       }
     }
 
-    bgAudio.addEventListener('canplaythrough', () => {
-      statusText.innerText = '724Hz FREQUENCY ALIGNED.';
-      statusText.style.color = '#83B3BE';
-    });
+    function onResize() {
+      if (!camera || !renderer) return;
 
-    bgAudio.addEventListener('error', () => {
-      statusText.innerText = 'AUDIO LOAD ERROR.';
-      statusText.style.color = '#FF4444';
-    });
-
-    enterBtn.addEventListener('click', startExperience);
-    window.addEventListener('wheel', handleWheel, { passive: false });
-
-    window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+    }
 
+    if (bgAudio) {
+      bgAudio.addEventListener('canplaythrough', () => {
+        if (statusText) {
+          statusText.innerText = '724Hz FREQUENCY ALIGNED.';
+          statusText.style.color = '#83B3BE';
+        }
+      });
+
+      bgAudio.addEventListener('error', () => {
+        if (statusText) {
+          statusText.innerText = 'AUDIO LOAD ERROR.';
+          statusText.style.color = '#FF4444';
+        }
+      });
+
+      bgAudio.load();
+    }
+
+    if (enterBtn) {
+      enterBtn.addEventListener('click', startExperience);
+    }
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('resize', onResize);
+
+    initDots();
     initVisuals();
-    bgAudio.load();
   </script>
 </body>
 </html>
