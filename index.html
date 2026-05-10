@@ -3,289 +3,357 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>ASTRO AWAKE | Astro Time Candle</title>
+  <title>ASTRO TIME CANDLE | 724Hz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Courier+Prime:wght@400&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --awake-blue: #83B3BE;
-      --aurora-white: #F2F2F2;
-      --void-black: #1A1C20;
+      --blue:   #83B3BE;
+      --deep:   #4A5B61;
+      --white:  #F2F2F2;
+      --black:  #1A1C20;
+      --warm:   #D9C5B2;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       overflow: hidden;
-      background: var(--void-black);
-      color: var(--aurora-white);
-      font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Cormorant Garamond', serif;
       cursor: none;
     }
 
-    #canvas-container {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    #custom-cursor {
-      width: 8px;
-      height: 8px;
-      background: var(--awake-blue);
+    /* ── Custom cursor ── */
+    #cursor {
+      width: 6px; height: 6px;
+      background: var(--blue);
       border-radius: 50%;
       position: fixed;
       pointer-events: none;
-      z-index: 10000;
-      filter: blur(1px);
-      transition: transform 0.1s linear;
-      opacity: 0.8;
-      margin-left: -4px;
-      margin-top: -4px;
+      z-index: 99999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.08s linear, width 0.3s, height 0.3s, opacity 0.3s;
+      mix-blend-mode: screen;
     }
-
-    /* ── Entry overlay ── */
-    #overlay-entry {
+    #cursor-ring {
+      width: 28px; height: 28px;
+      border: 1px solid rgba(131,179,190,0.3);
+      border-radius: 50%;
       position: fixed;
-      inset: 0;
-      background: var(--void-black);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-      transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      z-index: 99998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.18s ease, width 0.3s, height 0.3s, opacity 0.3s;
     }
 
-    .btn {
-      padding: 12px 40px;
-      border: 1px solid var(--awake-blue);
-      color: var(--awake-blue);
+    /* ── Canvas ── */
+    #canvas-container {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── Entry ── */
+    #entry {
+      position: fixed; inset: 0; z-index: 50;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      background: var(--black);
+      transition: opacity 1.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .entry-line {
+      width: 1px; height: 72px;
+      background: linear-gradient(to bottom, transparent, var(--blue));
+      margin-bottom: 48px;
+      animation: lineGrow 1.2s ease forwards;
+      transform-origin: top;
+    }
+    @keyframes lineGrow {
+      from { transform: scaleY(0); opacity: 0; }
+      to   { transform: scaleY(1); opacity: 1; }
+    }
+
+    #enter-btn {
+      font-family: 'Courier Prime', monospace;
+      font-size: 10px;
+      letter-spacing: 0.55em;
+      color: var(--blue);
       background: transparent;
-      font-size: 11px;
-      letter-spacing: 0.5em;
+      border: 1px solid rgba(131,179,190,0.4);
+      padding: 14px 48px;
       cursor: pointer;
-      transition: all 0.4s;
       text-transform: uppercase;
-      margin: 10px;
+      transition: all 0.5s;
+      position: relative;
+      overflow: hidden;
     }
-    .btn:hover {
-      background: var(--awake-blue);
-      color: var(--void-black);
-      box-shadow: 0 0 30px var(--awake-blue);
+    #enter-btn::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: var(--blue);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: -1;
     }
+    #enter-btn:hover::before { transform: scaleX(1); }
+    #enter-btn:hover { color: var(--black); border-color: var(--blue); }
 
-    .status {
-      margin-top: 20px;
-      font-size: 9px;
-      letter-spacing: 0.2em;
-      opacity: 0.35;
-      transition: color 0.3s;
-    }
-
-    /* ── UI labels ── */
-    .ui-text {
-      position: fixed;
-      left: 40px;
-      mix-blend-mode: exclusion;
-      pointer-events: none;
-      z-index: 10;
-    }
-    .mellow-title {
-      top: 40px;
-      color: var(--awake-blue);
-      font-size: 14px;
-      letter-spacing: 0.6em;
-      text-transform: uppercase;
-    }
-    .mellow-sub {
-      bottom: 40px;
-      color: var(--aurora-white);
-      font-size: 9px;
-      opacity: 0.5;
+    #status {
+      margin-top: 24px;
+      font-family: 'Courier Prime', monospace;
+      font-size: 8px;
       letter-spacing: 0.3em;
+      opacity: 0.4;
+      transition: color 0.4s, opacity 0.4s;
+      text-transform: uppercase;
     }
 
-    /* ── Intro panel: hidden until first intentional scroll ── */
-    #intro-panel {
-      position: fixed;
-      inset: 0;
-      z-index: 20;
+    /* ── Corner labels ── */
+    #label-tl {
+      position: fixed; top: 36px; left: 36px;
+      font-family: 'Courier Prime', monospace;
+      font-size: 9px; letter-spacing: 0.5em;
+      color: var(--blue); opacity: 0.7;
+      text-transform: uppercase;
+      pointer-events: none; z-index: 10;
+      mix-blend-mode: screen;
+    }
+    #label-bl {
+      position: fixed; bottom: 36px; left: 36px;
+      font-family: 'Courier Prime', monospace;
+      font-size: 8px; letter-spacing: 0.25em;
+      color: var(--white); opacity: 0.3;
+      pointer-events: none; z-index: 10;
+    }
+
+    /* ── Temperature gauge (embodied detail) ── */
+    #temp-gauge {
+      position: fixed; top: 36px; right: 36px;
+      font-family: 'Courier Prime', monospace;
+      font-size: 8px; letter-spacing: 0.3em;
+      color: var(--blue); opacity: 0;
+      pointer-events: none; z-index: 10;
+      text-align: right;
+      transition: opacity 1s;
+    }
+    #temp-bar {
+      width: 60px; height: 1px;
+      background: rgba(131,179,190,0.2);
+      margin-top: 6px;
+      margin-left: auto;
+      position: relative;
+      overflow: hidden;
+    }
+    #temp-fill {
+      position: absolute; left: 0; top: 0;
+      height: 100%;
+      background: var(--blue);
+      width: 0%;
+      transition: width 3s ease;
+    }
+
+    /* ── Scroll hint ── */
+    #scroll-hint {
+      position: fixed; bottom: 36px; right: 36px;
+      font-family: 'Courier Prime', monospace;
+      font-size: 8px; letter-spacing: 0.4em;
+      color: var(--blue); opacity: 0;
+      text-transform: uppercase;
+      pointer-events: none; z-index: 10;
+      transition: opacity 1s;
+      display: flex; align-items: center; gap: 10px;
+    }
+    #scroll-hint::before {
+      content: '';
+      display: block;
+      width: 20px; height: 1px;
+      background: var(--blue);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.3; width: 12px; }
+      50% { opacity: 1; width: 24px; }
+    }
+
+    /* ── Card layer ── */
+    #card-layer {
+      position: fixed; inset: 0; z-index: 20;
       display: none;
-      align-items: center;
-      justify-content: center;
       pointer-events: none;
-      background: radial-gradient(circle, rgba(26,28,32,0.10) 0%, rgba(26,28,32,0.72) 100%);
-      backdrop-filter: blur(4px);
     }
-    #intro-panel.visible {
-      display: flex;
-    }
+    #card-layer.active { display: block; }
 
-    .copy-card {
-      max-width: 680px;
-      padding: 0 32px;
-      text-align: center;
+    .card {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 10vw 10vh 10vw;
       opacity: 0;
-      transform: translateY(18px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
-      position: absolute;
+      transform: translateY(24px);
+      transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+                  transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: none;
     }
-    .copy-card.active {
+    .card.active {
       opacity: 1;
       transform: translateY(0);
       pointer-events: auto;
     }
 
-    .copy-index {
-      color: var(--awake-blue);
-      font-size: 11px;
-      letter-spacing: 0.5em;
-      margin-bottom: 24px;
-      text-transform: uppercase;
-    }
-    .copy-title {
-      color: var(--awake-blue);
-      font-size: 28px;
-      letter-spacing: 0.24em;
-      text-transform: uppercase;
-      margin-bottom: 26px;
-    }
-    .copy-body {
-      font-size: 15px;
-      line-height: 2;
-      letter-spacing: 0.08em;
-      opacity: 0.82;
-    }
-
-    /* ── Scroll hint ── */
-    #scroll-hint {
-      position: fixed;
-      bottom: 58px;
-      right: 40px;
-      z-index: 30;
-      font-size: 9px;
-      letter-spacing: 0.35em;
-      color: var(--awake-blue);
-      opacity: 0;
-      transition: opacity 0.8s ease;
-      text-transform: uppercase;
+    /* Subtle vignette only at bottom — candle stays visible */
+    .card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 55%;
+      background: linear-gradient(to top, rgba(26,28,32,0.88) 0%, transparent 100%);
+      z-index: -1;
       pointer-events: none;
     }
 
+    .card-index {
+      font-family: 'Courier Prime', monospace;
+      font-size: 9px; letter-spacing: 0.5em;
+      color: var(--blue); opacity: 0.6;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: clamp(28px, 4.5vw, 56px);
+      font-weight: 300;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--white);
+      line-height: 1.1;
+      margin-bottom: 24px;
+    }
+    .card-title em {
+      font-style: italic;
+      color: var(--blue);
+    }
+    .card-body {
+      font-size: clamp(14px, 1.4vw, 18px);
+      font-weight: 300;
+      line-height: 1.9;
+      letter-spacing: 0.04em;
+      opacity: 0.72;
+      max-width: 560px;
+    }
+
     /* ── Progress dots ── */
-    #progress-dots {
-      position: fixed;
-      right: 42px;
-      top: 50%;
+    #dots {
+      position: fixed; right: 36px; top: 50%;
       transform: translateY(-50%);
       z-index: 30;
       display: none;
-      flex-direction: column;
-      gap: 14px;
+      flex-direction: column; gap: 12px;
     }
-    #progress-dots.visible {
-      display: flex;
+    #dots.active { display: flex; }
+    .dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--white);
+      opacity: 0.2;
+      transition: all 0.4s;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+    .dot.on {
+      background: var(--blue);
+      opacity: 1;
+      box-shadow: 0 0 10px var(--blue);
+      height: 16px;
+      border-radius: 2px;
     }
 
-    .dot {
-      width: 5px;
-      height: 5px;
+    /* ── Heat ring (embodied) ── */
+    #heat-ring {
+      position: fixed;
+      width: 340px; height: 340px;
       border-radius: 50%;
-      background: var(--aurora-white);
-      opacity: 0.25;
-      transition: all 0.3s ease;
-    }
-    .dot.active {
-      background: var(--awake-blue);
-      opacity: 1;
-      box-shadow: 0 0 12px var(--awake-blue);
+      border: 1px solid rgba(131,179,190,0);
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none; z-index: 5;
+      transition: border-color 0.3s, box-shadow 0.3s;
     }
 
     @media (max-width: 768px) {
-      .mellow-title { left: 20px; top: 20px; font-size: 11px; letter-spacing: 0.35em; }
-      .mellow-sub   { left: 20px; bottom: 20px; font-size: 8px; letter-spacing: 0.18em; }
-      .copy-title   { font-size: 20px; letter-spacing: 0.16em; }
-      .copy-body    { font-size: 13px; }
-      #progress-dots { right: 22px; }
-      #scroll-hint   { right: 22px; bottom: 36px; }
+      #label-tl { top: 20px; left: 20px; font-size: 8px; }
+      #label-bl { bottom: 20px; left: 20px; }
+      .card { padding: 0 6vw 14vh 6vw; }
+      #dots { right: 16px; }
+      #scroll-hint { right: 16px; bottom: 20px; }
+      #temp-gauge { right: 16px; top: 20px; }
     }
   </style>
 </head>
-
 <body>
-  <div id="custom-cursor"></div>
+
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
   <div id="canvas-container"></div>
 
   <audio id="bg-audio" preload="auto" loop playsinline webkit-playsinline crossorigin="anonymous">
     <source src="https://mellowwei.github.io/AstroTimeCandle/winter_sun.m4a" type="audio/mp4" />
   </audio>
 
-  <div id="overlay-entry">
-    <div style="margin-bottom: 30px; width: 1px; height: 60px; background: var(--awake-blue); opacity: 0.4;"></div>
-    <button id="enter-btn" class="btn">ENTER 724Hz</button>
-    <p id="status-text" class="status">CALIBRATING FREQUENCY...</p>
+  <!-- Entry -->
+  <div id="entry">
+    <div class="entry-line"></div>
+    <button id="enter-btn">Enter 724Hz</button>
+    <p id="status">Calibrating frequency...</p>
   </div>
 
-  <div id="intro-panel">
-    <div class="copy-card active">
-      <div class="copy-index">00 / Definition</div>
-      <h1 class="copy-title">Astro Time Candle</h1>
-      <p class="copy-body">
-        Time, Revealed — Not Counted.<br>
-        A self-consuming body that transforms time into a visible process of revelation.
-      </p>
+  <!-- Cards -->
+  <div id="card-layer">
+    <div class="card active">
+      <div class="card-index">00 — Definition</div>
+      <h2 class="card-title">Time,<br><em>Revealed</em> —<br>Not Counted.</h2>
+      <p class="card-body">A self-consuming body that transforms duration into a visible process of emergence. Scroll to enter.</p>
     </div>
-    <div class="copy-card">
-      <div class="copy-index">01 / Mechanism</div>
-      <h1 class="copy-title">How Time Becomes Visible</h1>
-      <p class="copy-body">
-        As the outer wax melts, a stable inner core begins to emerge.<br>
-        You are not watching time disappear. You are watching what remains become visible.
-      </p>
+    <div class="card">
+      <div class="card-index">01 — Mechanism</div>
+      <h2 class="card-title">What Remains<br>Becomes <em>Visible</em></h2>
+      <p class="card-body">As the outer wax melts, a stable inner core begins to surface. You are not watching time disappear. You are watching what survives.</p>
     </div>
-    <div class="copy-card">
-      <div class="copy-index">02 / No Vessel</div>
-      <h1 class="copy-title">Structural Sovereignty</h1>
-      <p class="copy-body">
-        This is not a candle inside a container.<br>
-        The body itself is the boundary. It bears time directly.
-      </p>
+    <div class="card">
+      <div class="card-index">02 — Structure</div>
+      <h2 class="card-title">No Vessel.<br><em>Structural</em><br>Sovereignty.</h2>
+      <p class="card-body">This is not a candle inside a container. The body itself is the boundary. It bears time directly — no mediation, no protection.</p>
     </div>
-    <div class="copy-card">
-      <div class="copy-index">03 / Contract</div>
-      <h1 class="copy-title">The Qualia Contract</h1>
-      <p class="copy-body">
-        Heat, duration, and attention become a filter.<br>
-        What emerges is not decoration. It is evidence.
-      </p>
+    <div class="card">
+      <div class="card-index">03 — Contract</div>
+      <h2 class="card-title">Heat Is<br>the <em>Filter</em></h2>
+      <p class="card-body">Heat, duration, and attention converge. What emerges is not decoration. It is evidence of presence.</p>
     </div>
-    <div class="copy-card">
-      <div class="copy-index">04 / Use Case</div>
-      <h1 class="copy-title">When It Matters</h1>
-      <p class="copy-body">
-        Late-night study. Exam week. Sustained focus.<br>
-        Moments when time becomes abstract, and attention needs an anchor.
-      </p>
+    <div class="card">
+      <div class="card-index">04 — Moment</div>
+      <h2 class="card-title">When Time<br>Becomes <em>Abstract</em></h2>
+      <p class="card-body">Late-night study. Exam week. Sustained focus. Moments when the clock disappears and attention needs a body to hold onto.</p>
     </div>
-    <div class="copy-card">
-      <div class="copy-index">05 / Interface</div>
-      <h1 class="copy-title">Revelation Interface</h1>
-      <p class="copy-body">
-        This website is a digital echo of the physical process.<br>
-        A portal where perception aligns before the object is touched.
-      </p>
+    <div class="card">
+      <div class="card-index">05 — Portal</div>
+      <h2 class="card-title">Before<br><em>Touch</em>,<br>Perception.</h2>
+      <p class="card-body">This site is a digital echo of the physical process. Alignment before acquisition. The object has already begun its work.</p>
     </div>
   </div>
 
-  <div id="progress-dots"></div>
-  <div id="scroll-hint">Scroll to reveal</div>
-
-  <div class="ui-text mellow-title">Astro Time Candle</div>
-  <div class="ui-text mellow-sub">Architect: Wei Jueran | Philadelphia | 14.0°C</div>
+  <!-- UI chrome -->
+  <div id="label-tl">Astro Time Candle</div>
+  <div id="label-bl">Wei Jueran · Philadelphia · 14.0°C</div>
+  <div id="temp-gauge">
+    <span id="temp-val">14.0°C</span>
+    <div id="temp-bar"><div id="temp-fill"></div></div>
+  </div>
+  <div id="scroll-hint">Scroll</div>
+  <div id="dots"></div>
+  <div id="heat-ring"></div>
 
   <script type="importmap">
   { "imports": { "three": "https://unpkg.com/three@0.161.0/build/three.module.js" } }
@@ -294,226 +362,272 @@
   <script type="module">
     import * as THREE from 'three';
 
-    // ── DOM refs ──────────────────────────────────────────────
-    const container   = document.getElementById('canvas-container');
-    const entry       = document.getElementById('overlay-entry');
+    // ── DOM ──────────────────────────────────────────────────
+    const cursorDot   = document.getElementById('cursor');
+    const cursorRing  = document.getElementById('cursor-ring');
+    const entry       = document.getElementById('entry');
     const enterBtn    = document.getElementById('enter-btn');
-    const statusText  = document.getElementById('status-text');
-    const cursor      = document.getElementById('custom-cursor');
-    const introPanel  = document.getElementById('intro-panel');
-    const cards       = Array.from(document.querySelectorAll('.copy-card'));
-    const dotsWrap    = document.getElementById('progress-dots');
+    const statusEl    = document.getElementById('status');
+    const cardLayer   = document.getElementById('card-layer');
+    const cards       = [...document.querySelectorAll('.card')];
+    const dotsWrap    = document.getElementById('dots');
     const scrollHint  = document.getElementById('scroll-hint');
     const bgAudio     = document.getElementById('bg-audio');
+    const heatRing    = document.getElementById('heat-ring');
+    const tempGauge   = document.getElementById('temp-gauge');
+    const tempFill    = document.getElementById('temp-fill');
+    const tempVal     = document.getElementById('temp-val');
+    const container   = document.getElementById('canvas-container');
 
-    // ── State ─────────────────────────────────────────────────
-    let scene, camera, renderer, candleShell, candleCore, particles;
-    let isStarted       = false;
-    let cardsVisible    = false;   // cards only appear on first intentional scroll
-    let currentIndex    = 0;
-    let wheelLocked     = false;
-    let enterTime       = 0;       // timestamp of ENTER click — gate inertia scroll
+    // ── State ────────────────────────────────────────────────
+    let isStarted    = false;
+    let cardsShown   = false;
+    let currentIdx   = 0;
+    let wheelLocked  = false;
+    let enterTime    = 0;
+    let audioCtx, analyser, gainNode, dataArray, audioReady = false;
 
-    let audioContext    = null;
-    let analyser        = null;
-    let gainNode        = null;
-    let dataArray       = null;
-    let audioGraphReady = false;
-
-    // ── Build progress dots ───────────────────────────────────
-    cards.forEach((_, i) => {
-      const dot = document.createElement('div');
-      dot.className = 'dot' + (i === 0 ? ' active' : '');
-      dotsWrap.appendChild(dot);
+    // ── Cursor ───────────────────────────────────────────────
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    window.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursorDot.style.transform  = `translate(${mx}px, ${my}px) translate(-50%,-50%)`;
     });
-    const dots = Array.from(document.querySelectorAll('.dot'));
+    (function ringFollow() {
+      rx += (mx - rx) * 0.12;
+      ry += (my - ry) * 0.12;
+      cursorRing.style.transform = `translate(${rx}px, ${ry}px) translate(-50%,-50%)`;
+      requestAnimationFrame(ringFollow);
+    })();
 
-    // ── Cursor ────────────────────────────────────────────────
-    window.addEventListener('mousemove', (e) => {
-      cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
-    });
+    // ── THREE.js ─────────────────────────────────────────────
+    let scene, camera, renderer, shell, core, particles;
 
-    // ── THREE.js visuals ──────────────────────────────────────
     function initVisuals() {
-      scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.z = 15;
+      scene  = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 1000);
+      camera.position.z = 14;
 
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(innerWidth, innerHeight);
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
       container.appendChild(renderer.domElement);
 
-      const candleGroup = new THREE.Group();
+      const group = new THREE.Group();
 
-      candleCore = new THREE.Mesh(
-        new THREE.CylinderGeometry(1.2, 1.2, 8.4, 32),
-        new THREE.MeshStandardMaterial({ color: 0x4A5B61, metalness: 0.9, roughness: 0.1 })
+      core = new THREE.Mesh(
+        new THREE.CylinderGeometry(1.1, 1.1, 8, 32),
+        new THREE.MeshStandardMaterial({ color: 0x4A5B61, metalness: 0.95, roughness: 0.05 })
       );
 
-      candleShell = new THREE.Mesh(
-        new THREE.CylinderGeometry(3, 3, 9, 64),
+      shell = new THREE.Mesh(
+        new THREE.CylinderGeometry(2.8, 2.8, 9, 64),
         new THREE.MeshPhysicalMaterial({
-          color: 0x83B3BE, transmission: 0.8, roughness: 0.14, thickness: 6,
-          transparent: true, opacity: 0.9, emissive: 0x83B3BE, emissiveIntensity: 0.1
+          color: 0x83B3BE,
+          transmission: 0.82,
+          roughness: 0.12,
+          thickness: 5,
+          transparent: true,
+          opacity: 0.88,
+          emissive: 0x83B3BE,
+          emissiveIntensity: 0.08,
+          envMapIntensity: 0.5
         })
       );
 
-      candleGroup.add(candleCore, candleShell);
-      scene.add(candleGroup);
+      group.add(core, shell);
+      scene.add(group);
 
-      scene.add(new THREE.PointLight(0x83B3BE, 2, 80)).position.set(0, 5, 8);
-      scene.add(new THREE.AmbientLight(0x83B3BE, 0.35));
+      // Rim light
+      const rim = new THREE.PointLight(0x83B3BE, 1.8, 60);
+      rim.position.set(4, 6, 8);
+      scene.add(rim);
 
-      // Particle texture
+      // Fill light
+      const fill = new THREE.PointLight(0xD9C5B2, 0.6, 40);
+      fill.position.set(-5, -2, 4);
+      scene.add(fill);
+
+      scene.add(new THREE.AmbientLight(0x83B3BE, 0.25));
+
+      // Particles
       const pc = document.createElement('canvas');
       pc.width = pc.height = 64;
       const pctx = pc.getContext('2d');
-      const grad = pctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-      grad.addColorStop(0,   'rgba(242,242,242,1)');
-      grad.addColorStop(0.2, 'rgba(131,179,190,0.6)');
-      grad.addColorStop(0.6, 'rgba(26,28,32,0)');
-      pctx.fillStyle = grad;
-      pctx.fillRect(0, 0, 64, 64);
+      const g = pctx.createRadialGradient(32,32,0,32,32,32);
+      g.addColorStop(0,   'rgba(242,242,242,1)');
+      g.addColorStop(0.3, 'rgba(131,179,190,0.5)');
+      g.addColorStop(1,   'rgba(26,28,32,0)');
+      pctx.fillStyle = g;
+      pctx.fillRect(0,0,64,64);
 
       const geo = new THREE.BufferGeometry();
-      const pos = new Float32Array(10000 * 3);
-      for (let i = 0; i < pos.length; i++) pos[i] = (Math.random() - 0.5) * 80;
+      const pos = new Float32Array(8000 * 3);
+      for (let i = 0; i < pos.length; i++) pos[i] = (Math.random() - 0.5) * 90;
       geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
 
       particles = new THREE.Points(geo, new THREE.PointsMaterial({
-        size: 0.6, map: new THREE.CanvasTexture(pc),
-        transparent: true, opacity: 0.6,
+        size: 0.55, map: new THREE.CanvasTexture(pc),
+        transparent: true, opacity: 0.5,
         blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
       }));
       scene.add(particles);
 
-      animate();
+      renderLoop();
     }
 
-    function animate() {
-      requestAnimationFrame(animate);
-      if (candleShell) candleShell.rotation.y += 0.00724;
-      if (candleCore)  candleCore.rotation.y  -= 0.003;
+    let freqVal = 0;
+    function renderLoop() {
+      requestAnimationFrame(renderLoop);
+
+      const t = Date.now() * 0.001;
+      shell.rotation.y += 0.00724;
+      core.rotation.y  -= 0.003;
       if (particles) {
-        particles.rotation.y += 0.0003;
-        particles.rotation.x += 0.0001;
+        particles.rotation.y += 0.00025;
+        particles.rotation.x  = Math.sin(t * 0.08) * 0.04;
       }
-      if (isStarted && analyser && candleShell) {
+
+      // Subtle breathe
+      const breathe = 1 + Math.sin(t * 0.6) * 0.008;
+      shell.scale.set(breathe, 1, breathe);
+
+      if (isStarted && analyser) {
         analyser.getByteFrequencyData(dataArray);
         let sum = 0;
         for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
-        candleShell.material.emissiveIntensity = 0.1 + (sum / dataArray.length) / 80;
+        freqVal = sum / dataArray.length;
+        const intensity = 0.08 + freqVal / 70;
+        shell.material.emissiveIntensity = intensity;
+
+        // Heat ring reacts to audio
+        const ringOpacity = Math.min(freqVal / 60, 0.6);
+        heatRing.style.borderColor = `rgba(131,179,190,${ringOpacity})`;
+        heatRing.style.boxShadow   = `0 0 ${20 + freqVal}px rgba(131,179,190,${ringOpacity * 0.4})`;
       }
+
       renderer.render(scene, camera);
     }
 
-    // ── Audio ─────────────────────────────────────────────────
-    function setupAudioGraph() {
-      if (audioGraphReady) return;
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      audioContext = new AudioCtx();
-
-      const source = audioContext.createMediaElementSource(bgAudio);
-      analyser  = audioContext.createAnalyser();
-      gainNode  = audioContext.createGain();
-
+    // ── Audio ────────────────────────────────────────────────
+    function setupAudio() {
+      if (audioReady) return;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AC();
+      const src = audioCtx.createMediaElementSource(bgAudio);
+      analyser  = audioCtx.createAnalyser();
+      gainNode  = audioCtx.createGain();
       analyser.fftSize = 64;
-      analyser.smoothingTimeConstant = 0.8;
-      gainNode.gain.value = 2.2;
+      analyser.smoothingTimeConstant = 0.85;
+      gainNode.gain.value = 2.0;
       dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-      source.connect(gainNode);
+      src.connect(gainNode);
       gainNode.connect(analyser);
-      analyser.connect(audioContext.destination);
-      audioGraphReady = true;
+      analyser.connect(audioCtx.destination);
+      audioReady = true;
     }
 
-    // ── Card navigation ───────────────────────────────────────
-    function showCard(index) {
-      currentIndex = Math.max(0, Math.min(cards.length - 1, index));
-      cards.forEach((c, i) => c.classList.toggle('active', i === currentIndex));
-      dots.forEach((d, i)  => d.classList.toggle('active', i === currentIndex));
+    // ── Dots ─────────────────────────────────────────────────
+    cards.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i === 0 ? ' on' : '');
+      d.addEventListener('click', () => showCard(i));
+      dotsWrap.appendChild(d);
+    });
+    const dots = [...document.querySelectorAll('.dot')];
+
+    function showCard(n) {
+      currentIdx = Math.max(0, Math.min(cards.length - 1, n));
+      cards.forEach((c, i) => c.classList.toggle('active', i === currentIdx));
+      dots.forEach((d, i)  => d.classList.toggle('on',     i === currentIdx));
     }
 
     function revealCards() {
-      if (cardsVisible) return;
-      cardsVisible = true;
-      introPanel.classList.add('visible');
-      dotsWrap.classList.add('visible');
-      scrollHint.style.opacity = '0.8';
-      setTimeout(() => { scrollHint.style.opacity = '0.35'; }, 1800);
+      if (cardsShown) return;
+      cardsShown = true;
+      cardLayer.classList.add('active');
+      dotsWrap.classList.add('active');
+      scrollHint.style.opacity = '0.7';
+      setTimeout(() => { scrollHint.style.opacity = '0.25'; }, 2200);
     }
 
-    function handleWheel(e) {
+    // ── Wheel ────────────────────────────────────────────────
+    window.addEventListener('wheel', e => {
       if (!isStarted) return;
       e.preventDefault();
-
-      // Gate: ignore inertia scroll within 800ms of pressing ENTER
-      if (Date.now() - enterTime < 800) return;
+      // Hard gate: 2s after enter to kill trackpad inertia
+      if (Date.now() - enterTime < 2000) return;
       if (wheelLocked) return;
-
       wheelLocked = true;
 
-      if (!cardsVisible) {
-        // First intentional scroll → reveal cards
+      if (!cardsShown) {
         revealCards();
       } else {
-        if (e.deltaY > 0) showCard(currentIndex + 1);
-        else               showCard(currentIndex - 1);
+        showCard(currentIdx + (e.deltaY > 0 ? 1 : -1));
       }
 
-      setTimeout(() => { wheelLocked = false; }, 650);
-    }
+      setTimeout(() => { wheelLocked = false; }, 700);
+    }, { passive: false });
 
-    // ── Enter ─────────────────────────────────────────────────
+    // ── Enter ────────────────────────────────────────────────
     async function startExperience() {
       if (isStarted) return;
       isStarted = true;
-      enterTime = Date.now();   // record time to gate inertia
+      enterTime = Date.now();
 
       try {
-        setupAudioGraph();
-        if (audioContext.state === 'suspended') await audioContext.resume();
+        setupAudio();
+        if (audioCtx.state === 'suspended') await audioCtx.resume();
         bgAudio.volume = 1.0;
         await bgAudio.play();
-      } catch (err) {
-        console.warn('[724Hz] Audio blocked:', err);
-        statusText.innerText = 'AUDIO BLOCKED — VISUAL MODE';
-        statusText.style.color = '#FFBB00';
+      } catch(e) {
+        console.warn('Audio blocked', e);
       }
 
-      // Fade out entry, then show scroll hint (NOT cards yet)
       entry.style.opacity = '0';
       setTimeout(() => {
         entry.style.display = 'none';
-        // Show subtle hint to scroll
-        scrollHint.style.opacity = '0.6';
-        setTimeout(() => { scrollHint.style.opacity = '0.25'; }, 2500);
-      }, 1200);
+
+        // Show temperature gauge (embodied detail)
+        tempGauge.style.opacity = '0.6';
+        tempFill.style.width = '72%';
+
+        // Animate temp number
+        let t = 0;
+        const tInterval = setInterval(() => {
+          t += 0.08;
+          const v = (14.0 + Math.sin(t) * 0.3).toFixed(1);
+          tempVal.innerText = v + '°C';
+          if (!isStarted) clearInterval(tInterval);
+        }, 200);
+
+        // Show scroll hint after 1.5s
+        setTimeout(() => {
+          scrollHint.style.opacity = '0.55';
+          setTimeout(() => { scrollHint.style.opacity = '0.2'; }, 2800);
+        }, 1500);
+
+      }, 1600);
     }
 
-    // ── Audio status ──────────────────────────────────────────
     bgAudio.addEventListener('canplaythrough', () => {
-      statusText.innerText = '724Hz FREQUENCY ALIGNED.';
-      statusText.style.color = '#83B3BE';
+      statusEl.innerText = '724Hz frequency aligned.';
+      statusEl.style.color = 'rgba(131,179,190,0.8)';
+      statusEl.style.opacity = '0.8';
     });
     bgAudio.addEventListener('error', () => {
-      statusText.innerText = 'AUDIO LOAD ERROR.';
-      statusText.style.color = '#FF4444';
+      statusEl.innerText = 'Audio load error.';
+      statusEl.style.color = '#FF6B6B';
     });
 
-    // ── Event listeners ───────────────────────────────────────
     enterBtn.addEventListener('click', startExperience);
-    window.addEventListener('wheel', handleWheel, { passive: false });
 
     window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.aspect = innerWidth / innerHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(innerWidth, innerHeight);
     });
 
-    // ── Boot ──────────────────────────────────────────────────
     initVisuals();
     bgAudio.load();
   </script>
