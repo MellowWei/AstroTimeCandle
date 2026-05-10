@@ -42,8 +42,11 @@
       filter: blur(1px);
       transition: transform 0.1s linear;
       opacity: 0.8;
+      margin-left: -4px;
+      margin-top: -4px;
     }
 
+    /* ── Entry overlay ── */
     #overlay-entry {
       position: fixed;
       inset: 0;
@@ -68,7 +71,6 @@
       text-transform: uppercase;
       margin: 10px;
     }
-
     .btn:hover {
       background: var(--awake-blue);
       color: var(--void-black);
@@ -80,8 +82,10 @@
       font-size: 9px;
       letter-spacing: 0.2em;
       opacity: 0.35;
+      transition: color 0.3s;
     }
 
+    /* ── UI labels ── */
     .ui-text {
       position: fixed;
       left: 40px;
@@ -89,7 +93,6 @@
       pointer-events: none;
       z-index: 10;
     }
-
     .mellow-title {
       top: 40px;
       color: var(--awake-blue);
@@ -97,7 +100,6 @@
       letter-spacing: 0.6em;
       text-transform: uppercase;
     }
-
     .mellow-sub {
       bottom: 40px;
       color: var(--aurora-white);
@@ -106,6 +108,7 @@
       letter-spacing: 0.3em;
     }
 
+    /* ── Intro panel: hidden until first intentional scroll ── */
     #intro-panel {
       position: fixed;
       inset: 0;
@@ -117,6 +120,9 @@
       background: radial-gradient(circle, rgba(26,28,32,0.10) 0%, rgba(26,28,32,0.72) 100%);
       backdrop-filter: blur(4px);
     }
+    #intro-panel.visible {
+      display: flex;
+    }
 
     .copy-card {
       max-width: 680px;
@@ -126,11 +132,12 @@
       transform: translateY(18px);
       transition: opacity 0.7s ease, transform 0.7s ease;
       position: absolute;
+      pointer-events: none;
     }
-
     .copy-card.active {
       opacity: 1;
       transform: translateY(0);
+      pointer-events: auto;
     }
 
     .copy-index {
@@ -140,7 +147,6 @@
       margin-bottom: 24px;
       text-transform: uppercase;
     }
-
     .copy-title {
       color: var(--awake-blue);
       font-size: 28px;
@@ -148,7 +154,6 @@
       text-transform: uppercase;
       margin-bottom: 26px;
     }
-
     .copy-body {
       font-size: 15px;
       line-height: 2;
@@ -156,6 +161,7 @@
       opacity: 0.82;
     }
 
+    /* ── Scroll hint ── */
     #scroll-hint {
       position: fixed;
       bottom: 58px;
@@ -170,6 +176,7 @@
       pointer-events: none;
     }
 
+    /* ── Progress dots ── */
     #progress-dots {
       position: fixed;
       right: 42px;
@@ -180,6 +187,9 @@
       flex-direction: column;
       gap: 14px;
     }
+    #progress-dots.visible {
+      display: flex;
+    }
 
     .dot {
       width: 5px;
@@ -189,7 +199,6 @@
       opacity: 0.25;
       transition: all 0.3s ease;
     }
-
     .dot.active {
       background: var(--awake-blue);
       opacity: 1;
@@ -198,11 +207,11 @@
 
     @media (max-width: 768px) {
       .mellow-title { left: 20px; top: 20px; font-size: 11px; letter-spacing: 0.35em; }
-      .mellow-sub { left: 20px; bottom: 20px; font-size: 8px; letter-spacing: 0.18em; }
-      .copy-title { font-size: 20px; letter-spacing: 0.16em; }
-      .copy-body { font-size: 13px; }
+      .mellow-sub   { left: 20px; bottom: 20px; font-size: 8px; letter-spacing: 0.18em; }
+      .copy-title   { font-size: 20px; letter-spacing: 0.16em; }
+      .copy-body    { font-size: 13px; }
       #progress-dots { right: 22px; }
-      #scroll-hint { right: 22px; bottom: 36px; }
+      #scroll-hint   { right: 22px; bottom: 36px; }
     }
   </style>
 </head>
@@ -230,7 +239,6 @@
         A self-consuming body that transforms time into a visible process of revelation.
       </p>
     </div>
-
     <div class="copy-card">
       <div class="copy-index">01 / Mechanism</div>
       <h1 class="copy-title">How Time Becomes Visible</h1>
@@ -239,7 +247,6 @@
         You are not watching time disappear. You are watching what remains become visible.
       </p>
     </div>
-
     <div class="copy-card">
       <div class="copy-index">02 / No Vessel</div>
       <h1 class="copy-title">Structural Sovereignty</h1>
@@ -248,7 +255,6 @@
         The body itself is the boundary. It bears time directly.
       </p>
     </div>
-
     <div class="copy-card">
       <div class="copy-index">03 / Contract</div>
       <h1 class="copy-title">The Qualia Contract</h1>
@@ -257,7 +263,6 @@
         What emerges is not decoration. It is evidence.
       </p>
     </div>
-
     <div class="copy-card">
       <div class="copy-index">04 / Use Case</div>
       <h1 class="copy-title">When It Matters</h1>
@@ -266,7 +271,6 @@
         Moments when time becomes abstract, and attention needs an anchor.
       </p>
     </div>
-
     <div class="copy-card">
       <div class="copy-index">05 / Interface</div>
       <h1 class="copy-title">Revelation Interface</h1>
@@ -284,53 +288,54 @@
   <div class="ui-text mellow-sub">Architect: Wei Jueran | Philadelphia | 14.0°C</div>
 
   <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.161.0/build/three.module.js"
-    }
-  }
+  { "imports": { "three": "https://unpkg.com/three@0.161.0/build/three.module.js" } }
   </script>
 
   <script type="module">
     import * as THREE from 'three';
 
-    const container = document.getElementById('canvas-container');
-    const entry = document.getElementById('overlay-entry');
-    const enterBtn = document.getElementById('enter-btn');
-    const statusText = document.getElementById('status-text');
-    const cursor = document.getElementById('custom-cursor');
-    const introPanel = document.getElementById('intro-panel');
-    const cards = Array.from(document.querySelectorAll('.copy-card'));
-    const dotsWrap = document.getElementById('progress-dots');
-    const scrollHint = document.getElementById('scroll-hint');
-    const bgAudio = document.getElementById('bg-audio');
+    // ── DOM refs ──────────────────────────────────────────────
+    const container   = document.getElementById('canvas-container');
+    const entry       = document.getElementById('overlay-entry');
+    const enterBtn    = document.getElementById('enter-btn');
+    const statusText  = document.getElementById('status-text');
+    const cursor      = document.getElementById('custom-cursor');
+    const introPanel  = document.getElementById('intro-panel');
+    const cards       = Array.from(document.querySelectorAll('.copy-card'));
+    const dotsWrap    = document.getElementById('progress-dots');
+    const scrollHint  = document.getElementById('scroll-hint');
+    const bgAudio     = document.getElementById('bg-audio');
 
+    // ── State ─────────────────────────────────────────────────
     let scene, camera, renderer, candleShell, candleCore, particles;
-    let isStarted = false;
-    let currentIndex = 0;
-    let wheelLocked = false;
+    let isStarted       = false;
+    let cardsVisible    = false;   // cards only appear on first intentional scroll
+    let currentIndex    = 0;
+    let wheelLocked     = false;
+    let enterTime       = 0;       // timestamp of ENTER click — gate inertia scroll
 
-    let audioContext = null;
-    let analyser = null;
-    let sourceNode = null;
-    let gainNode = null;
-    let dataArray = null;
+    let audioContext    = null;
+    let analyser        = null;
+    let gainNode        = null;
+    let dataArray       = null;
     let audioGraphReady = false;
 
+    // ── Build progress dots ───────────────────────────────────
     cards.forEach((_, i) => {
       const dot = document.createElement('div');
-      dot.className = i === 0 ? 'dot active' : 'dot';
+      dot.className = 'dot' + (i === 0 ? ' active' : '');
       dotsWrap.appendChild(dot);
     });
     const dots = Array.from(document.querySelectorAll('.dot'));
 
+    // ── Cursor ────────────────────────────────────────────────
     window.addEventListener('mousemove', (e) => {
       cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
     });
 
+    // ── THREE.js visuals ──────────────────────────────────────
     function initVisuals() {
       scene = new THREE.Scene();
-
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
       camera.position.z = 15;
 
@@ -343,193 +348,162 @@
 
       candleCore = new THREE.Mesh(
         new THREE.CylinderGeometry(1.2, 1.2, 8.4, 32),
-        new THREE.MeshStandardMaterial({
-          color: 0x4A5B61,
-          metalness: 0.9,
-          roughness: 0.1
-        })
+        new THREE.MeshStandardMaterial({ color: 0x4A5B61, metalness: 0.9, roughness: 0.1 })
       );
 
       candleShell = new THREE.Mesh(
         new THREE.CylinderGeometry(3, 3, 9, 64),
         new THREE.MeshPhysicalMaterial({
-          color: 0x83B3BE,
-          transmission: 0.8,
-          roughness: 0.14,
-          thickness: 6,
-          transparent: true,
-          opacity: 0.9,
-          emissive: 0x83B3BE,
-          emissiveIntensity: 0.1
+          color: 0x83B3BE, transmission: 0.8, roughness: 0.14, thickness: 6,
+          transparent: true, opacity: 0.9, emissive: 0x83B3BE, emissiveIntensity: 0.1
         })
       );
 
       candleGroup.add(candleCore, candleShell);
       scene.add(candleGroup);
 
-      const light = new THREE.PointLight(0x83B3BE, 2, 80);
-      light.position.set(0, 5, 8);
-      scene.add(light);
+      scene.add(new THREE.PointLight(0x83B3BE, 2, 80)).position.set(0, 5, 8);
+      scene.add(new THREE.AmbientLight(0x83B3BE, 0.35));
 
-      const ambient = new THREE.AmbientLight(0x83B3BE, 0.35);
-      scene.add(ambient);
-
-      const canvas = document.createElement('canvas');
-      canvas.width = 64;
-      canvas.height = 64;
-      const ctx = canvas.getContext('2d');
-      const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-      grad.addColorStop(0, 'rgba(242,242,242,1)');
+      // Particle texture
+      const pc = document.createElement('canvas');
+      pc.width = pc.height = 64;
+      const pctx = pc.getContext('2d');
+      const grad = pctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0,   'rgba(242,242,242,1)');
       grad.addColorStop(0.2, 'rgba(131,179,190,0.6)');
       grad.addColorStop(0.6, 'rgba(26,28,32,0)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 64, 64);
+      pctx.fillStyle = grad;
+      pctx.fillRect(0, 0, 64, 64);
 
-      const tex = new THREE.CanvasTexture(canvas);
       const geo = new THREE.BufferGeometry();
       const pos = new Float32Array(10000 * 3);
       for (let i = 0; i < pos.length; i++) pos[i] = (Math.random() - 0.5) * 80;
       geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
 
-      particles = new THREE.Points(
-        geo,
-        new THREE.PointsMaterial({
-          size: 0.6,
-          map: tex,
-          transparent: true,
-          opacity: 0.6,
-          blending: THREE.AdditiveBlending,
-          depthWrite: false,
-          sizeAttenuation: true
-        })
-      );
+      particles = new THREE.Points(geo, new THREE.PointsMaterial({
+        size: 0.6, map: new THREE.CanvasTexture(pc),
+        transparent: true, opacity: 0.6,
+        blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
+      }));
       scene.add(particles);
 
       animate();
     }
 
-    function setupAudioGraph() {
-      if (audioGraphReady) return;
-
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      audioContext = new AudioCtx();
-
-      sourceNode = audioContext.createMediaElementSource(bgAudio);
-      analyser = audioContext.createAnalyser();
-      gainNode = audioContext.createGain();
-
-      analyser.fftSize = 64;
-      analyser.smoothingTimeConstant = 0.8;
-      gainNode.gain.value = 2.2;
-
-      dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-      sourceNode.connect(gainNode);
-      gainNode.connect(analyser);
-      analyser.connect(audioContext.destination);
-
-      audioGraphReady = true;
-    }
-
-    function getAverageFrequency() {
-      if (!analyser || !dataArray) return 0;
-      analyser.getByteFrequencyData(dataArray);
-      let sum = 0;
-      for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
-      return sum / dataArray.length;
-    }
-
     function animate() {
       requestAnimationFrame(animate);
-
       if (candleShell) candleShell.rotation.y += 0.00724;
-      if (candleCore) candleCore.rotation.y -= 0.003;
+      if (candleCore)  candleCore.rotation.y  -= 0.003;
       if (particles) {
         particles.rotation.y += 0.0003;
         particles.rotation.x += 0.0001;
       }
-
       if (isStarted && analyser && candleShell) {
-        const freq = getAverageFrequency();
-        candleShell.material.emissiveIntensity = 0.1 + freq / 80;
+        analyser.getByteFrequencyData(dataArray);
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+        candleShell.material.emissiveIntensity = 0.1 + (sum / dataArray.length) / 80;
       }
-
       renderer.render(scene, camera);
     }
 
+    // ── Audio ─────────────────────────────────────────────────
+    function setupAudioGraph() {
+      if (audioGraphReady) return;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      audioContext = new AudioCtx();
+
+      const source = audioContext.createMediaElementSource(bgAudio);
+      analyser  = audioContext.createAnalyser();
+      gainNode  = audioContext.createGain();
+
+      analyser.fftSize = 64;
+      analyser.smoothingTimeConstant = 0.8;
+      gainNode.gain.value = 2.2;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+      source.connect(gainNode);
+      gainNode.connect(analyser);
+      analyser.connect(audioContext.destination);
+      audioGraphReady = true;
+    }
+
+    // ── Card navigation ───────────────────────────────────────
     function showCard(index) {
       currentIndex = Math.max(0, Math.min(cards.length - 1, index));
+      cards.forEach((c, i) => c.classList.toggle('active', i === currentIndex));
+      dots.forEach((d, i)  => d.classList.toggle('active', i === currentIndex));
+    }
 
-      cards.forEach((card, i) => {
-        card.classList.toggle('active', i === currentIndex);
-      });
-
-      dots.forEach((dot, i) => {
-        dot.classList.toggle('active', i === currentIndex);
-      });
+    function revealCards() {
+      if (cardsVisible) return;
+      cardsVisible = true;
+      introPanel.classList.add('visible');
+      dotsWrap.classList.add('visible');
+      scrollHint.style.opacity = '0.8';
+      setTimeout(() => { scrollHint.style.opacity = '0.35'; }, 1800);
     }
 
     function handleWheel(e) {
       if (!isStarted) return;
       e.preventDefault();
 
+      // Gate: ignore inertia scroll within 800ms of pressing ENTER
+      if (Date.now() - enterTime < 800) return;
       if (wheelLocked) return;
+
       wheelLocked = true;
 
-      if (e.deltaY > 0) {
-        showCard(currentIndex + 1);
-      } else if (e.deltaY < 0) {
-        showCard(currentIndex - 1);
+      if (!cardsVisible) {
+        // First intentional scroll → reveal cards
+        revealCards();
+      } else {
+        if (e.deltaY > 0) showCard(currentIndex + 1);
+        else               showCard(currentIndex - 1);
       }
 
-      setTimeout(() => {
-        wheelLocked = false;
-      }, 650);
+      setTimeout(() => { wheelLocked = false; }, 650);
     }
 
+    // ── Enter ─────────────────────────────────────────────────
     async function startExperience() {
+      if (isStarted) return;
+      isStarted = true;
+      enterTime = Date.now();   // record time to gate inertia
+
       try {
-        isStarted = true;
-
         setupAudioGraph();
-
-        if (audioContext && audioContext.state === 'suspended') {
-          await audioContext.resume();
-        }
-
+        if (audioContext.state === 'suspended') await audioContext.resume();
         bgAudio.volume = 1.0;
         await bgAudio.play();
-
-        entry.style.opacity = '0';
-
-        setTimeout(() => {
-          entry.remove();
-          introPanel.style.display = 'flex';
-          dotsWrap.style.display = 'flex';
-          scrollHint.style.opacity = '0.8';
-
-          setTimeout(() => {
-            scrollHint.style.opacity = '0.35';
-          }, 1800);
-        }, 1200);
-
       } catch (err) {
-        console.error(err);
-        statusText.innerText = 'AUDIO PLAYBACK BLOCKED.';
-        statusText.style.color = '#FF4444';
+        console.warn('[724Hz] Audio blocked:', err);
+        statusText.innerText = 'AUDIO BLOCKED — VISUAL MODE';
+        statusText.style.color = '#FFBB00';
       }
+
+      // Fade out entry, then show scroll hint (NOT cards yet)
+      entry.style.opacity = '0';
+      setTimeout(() => {
+        entry.style.display = 'none';
+        // Show subtle hint to scroll
+        scrollHint.style.opacity = '0.6';
+        setTimeout(() => { scrollHint.style.opacity = '0.25'; }, 2500);
+      }, 1200);
     }
 
+    // ── Audio status ──────────────────────────────────────────
     bgAudio.addEventListener('canplaythrough', () => {
       statusText.innerText = '724Hz FREQUENCY ALIGNED.';
       statusText.style.color = '#83B3BE';
     });
-
     bgAudio.addEventListener('error', () => {
       statusText.innerText = 'AUDIO LOAD ERROR.';
       statusText.style.color = '#FF4444';
     });
 
+    // ── Event listeners ───────────────────────────────────────
     enterBtn.addEventListener('click', startExperience);
     window.addEventListener('wheel', handleWheel, { passive: false });
 
@@ -539,6 +513,7 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
+    // ── Boot ──────────────────────────────────────────────────
     initVisuals();
     bgAudio.load();
   </script>
