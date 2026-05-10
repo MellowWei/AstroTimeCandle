@@ -9,11 +9,11 @@
 
   <style>
     :root {
-      --blue:   #83B3BE;
-      --deep:   #4A5B61;
-      --white:  #F2F2F2;
-      --black:  #1A1C20;
-      --warm:   #D9C5B2;
+      --blue:  #83B3BE;
+      --deep:  #4A5B61;
+      --white: #F2F2F2;
+      --black: #1A1C20;
+      --warm:  #D9C5B2;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -27,44 +27,32 @@
       cursor: none;
     }
 
-    /* ── Custom cursor ── */
     #cursor {
       width: 6px; height: 6px;
       background: var(--blue);
       border-radius: 50%;
-      position: fixed;
-      pointer-events: none;
-      z-index: 99999;
-      transform: translate(-50%, -50%);
-      transition: transform 0.08s linear, width 0.3s, height 0.3s, opacity 0.3s;
+      position: fixed; pointer-events: none; z-index: 99999;
+      transform: translate(-50%,-50%);
       mix-blend-mode: screen;
     }
     #cursor-ring {
       width: 28px; height: 28px;
       border: 1px solid rgba(131,179,190,0.3);
       border-radius: 50%;
-      position: fixed;
-      pointer-events: none;
-      z-index: 99998;
-      transform: translate(-50%, -50%);
-      transition: transform 0.18s ease, width 0.3s, height 0.3s, opacity 0.3s;
+      position: fixed; pointer-events: none; z-index: 99998;
+      transform: translate(-50%,-50%);
     }
 
-    /* ── Canvas ── */
-    #canvas-container {
-      position: fixed; inset: 0; z-index: 0;
-      pointer-events: none;
-    }
+    #canvas-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
-    /* ── Entry ── */
+    /* Entry */
     #entry {
       position: fixed; inset: 0; z-index: 50;
       display: flex; flex-direction: column;
       justify-content: center; align-items: center;
       background: var(--black);
-      transition: opacity 1.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: opacity 1.6s cubic-bezier(0.4,0,0.2,1);
     }
-
     .entry-line {
       width: 1px; height: 72px;
       background: linear-gradient(to bottom, transparent, var(--blue));
@@ -76,28 +64,20 @@
       from { transform: scaleY(0); opacity: 0; }
       to   { transform: scaleY(1); opacity: 1; }
     }
-
     #enter-btn {
       font-family: 'Courier Prime', monospace;
-      font-size: 10px;
-      letter-spacing: 0.55em;
-      color: var(--blue);
-      background: transparent;
+      font-size: 10px; letter-spacing: 0.55em;
+      color: var(--blue); background: transparent;
       border: 1px solid rgba(131,179,190,0.4);
-      padding: 14px 48px;
-      cursor: pointer;
+      padding: 14px 48px; cursor: pointer;
       text-transform: uppercase;
-      transition: all 0.5s;
-      position: relative;
-      overflow: hidden;
+      transition: all 0.5s; position: relative; overflow: hidden;
     }
     #enter-btn::before {
-      content: '';
-      position: absolute; inset: 0;
+      content: ''; position: absolute; inset: 0;
       background: var(--blue);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
       z-index: -1;
     }
     #enter-btn:hover::before { transform: scaleX(1); }
@@ -106,14 +86,12 @@
     #status {
       margin-top: 24px;
       font-family: 'Courier Prime', monospace;
-      font-size: 8px;
-      letter-spacing: 0.3em;
-      opacity: 0.4;
-      transition: color 0.4s, opacity 0.4s;
+      font-size: 8px; letter-spacing: 0.3em;
+      opacity: 0.4; transition: color 0.4s, opacity 0.4s;
       text-transform: uppercase;
     }
 
-    /* ── Corner labels ── */
+    /* Labels */
     #label-tl {
       position: fixed; top: 36px; left: 36px;
       font-family: 'Courier Prime', monospace;
@@ -131,33 +109,28 @@
       pointer-events: none; z-index: 10;
     }
 
-    /* ── Temperature gauge (embodied detail) ── */
+    /* Temp gauge */
     #temp-gauge {
       position: fixed; top: 36px; right: 36px;
       font-family: 'Courier Prime', monospace;
       font-size: 8px; letter-spacing: 0.3em;
       color: var(--blue); opacity: 0;
       pointer-events: none; z-index: 10;
-      text-align: right;
-      transition: opacity 1s;
+      text-align: right; transition: opacity 1s;
     }
     #temp-bar {
       width: 60px; height: 1px;
       background: rgba(131,179,190,0.2);
-      margin-top: 6px;
-      margin-left: auto;
-      position: relative;
-      overflow: hidden;
+      margin-top: 6px; margin-left: auto;
+      position: relative; overflow: hidden;
     }
     #temp-fill {
       position: absolute; left: 0; top: 0;
-      height: 100%;
-      background: var(--blue);
-      width: 0%;
-      transition: width 3s ease;
+      height: 100%; background: var(--blue);
+      width: 0%; transition: width 3s ease;
     }
 
-    /* ── Scroll hint ── */
+    /* Scroll hint */
     #scroll-hint {
       position: fixed; bottom: 36px; right: 36px;
       font-family: 'Courier Prime', monospace;
@@ -169,22 +142,19 @@
       display: flex; align-items: center; gap: 10px;
     }
     #scroll-hint::before {
-      content: '';
-      display: block;
-      width: 20px; height: 1px;
-      background: var(--blue);
+      content: ''; display: block;
+      width: 20px; height: 1px; background: var(--blue);
       animation: scrollPulse 2s ease-in-out infinite;
     }
     @keyframes scrollPulse {
-      0%, 100% { opacity: 0.3; width: 12px; }
-      50% { opacity: 1; width: 24px; }
+      0%,100% { opacity: 0.3; width: 12px; }
+      50%      { opacity: 1;   width: 24px; }
     }
 
-    /* ── Card layer ── */
+    /* Cards */
     #card-layer {
       position: fixed; inset: 0; z-index: 20;
-      display: none;
-      pointer-events: none;
+      display: none; pointer-events: none;
     }
     #card-layer.active { display: block; }
 
@@ -193,92 +163,64 @@
       display: flex; flex-direction: column;
       justify-content: flex-end;
       padding: 0 10vw 10vh 10vw;
-      opacity: 0;
-      transform: translateY(24px);
-      transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1),
-                  transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity: 0; transform: translateY(24px);
+      transition: opacity 0.9s cubic-bezier(0.4,0,0.2,1),
+                  transform 0.9s cubic-bezier(0.4,0,0.2,1);
       pointer-events: none;
     }
-    .card.active {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-
-    /* Subtle vignette only at bottom — candle stays visible */
+    .card.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
     .card::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 55%;
+      content: ''; position: absolute;
+      bottom: 0; left: 0; right: 0; height: 55%;
       background: linear-gradient(to top, rgba(26,28,32,0.88) 0%, transparent 100%);
-      z-index: -1;
-      pointer-events: none;
+      z-index: -1; pointer-events: none;
     }
 
     .card-index {
       font-family: 'Courier Prime', monospace;
       font-size: 9px; letter-spacing: 0.5em;
       color: var(--blue); opacity: 0.6;
-      text-transform: uppercase;
-      margin-bottom: 20px;
+      text-transform: uppercase; margin-bottom: 20px;
     }
     .card-title {
-      font-size: clamp(28px, 4.5vw, 56px);
-      font-weight: 300;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--white);
-      line-height: 1.1;
-      margin-bottom: 24px;
+      font-size: clamp(28px,4.5vw,56px);
+      font-weight: 300; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--white);
+      line-height: 1.1; margin-bottom: 24px;
     }
-    .card-title em {
-      font-style: italic;
-      color: var(--blue);
-    }
+    .card-title em { font-style: italic; color: var(--blue); }
     .card-body {
-      font-size: clamp(14px, 1.4vw, 18px);
-      font-weight: 300;
-      line-height: 1.9;
-      letter-spacing: 0.04em;
-      opacity: 0.72;
+      font-size: clamp(14px,1.4vw,18px);
+      font-weight: 300; line-height: 1.9;
+      letter-spacing: 0.04em; opacity: 0.72;
       max-width: 560px;
     }
 
-    /* ── Progress dots ── */
+    /* Dots */
     #dots {
       position: fixed; right: 36px; top: 50%;
       transform: translateY(-50%);
-      z-index: 30;
-      display: none;
+      z-index: 30; display: none;
       flex-direction: column; gap: 12px;
     }
     #dots.active { display: flex; }
     .dot {
-      width: 4px; height: 4px;
-      border-radius: 50%;
-      background: var(--white);
-      opacity: 0.2;
-      transition: all 0.4s;
-      cursor: pointer;
-      pointer-events: auto;
+      width: 4px; height: 4px; border-radius: 50%;
+      background: var(--white); opacity: 0.2;
+      transition: all 0.4s; cursor: pointer;
     }
     .dot.on {
-      background: var(--blue);
-      opacity: 1;
+      background: var(--blue); opacity: 1;
       box-shadow: 0 0 10px var(--blue);
-      height: 16px;
-      border-radius: 2px;
+      height: 16px; border-radius: 2px;
     }
 
-    /* ── Heat ring (embodied) ── */
+    /* Heat ring */
     #heat-ring {
       position: fixed;
-      width: 340px; height: 340px;
-      border-radius: 50%;
+      width: 340px; height: 340px; border-radius: 50%;
       border: 1px solid rgba(131,179,190,0);
-      left: 50%; top: 50%;
-      transform: translate(-50%, -50%);
+      left: 50%; top: 50%; transform: translate(-50%,-50%);
       pointer-events: none; z-index: 5;
       transition: border-color 0.3s, box-shadow 0.3s;
     }
@@ -303,14 +245,12 @@
     <source src="https://mellowwei.github.io/AstroTimeCandle/winter_sun.m4a" type="audio/mp4" />
   </audio>
 
-  <!-- Entry -->
   <div id="entry">
     <div class="entry-line"></div>
     <button id="enter-btn">Enter 724Hz</button>
     <p id="status">Calibrating frequency...</p>
   </div>
 
-  <!-- Cards -->
   <div id="card-layer">
     <div class="card active">
       <div class="card-index">00 — Definition</div>
@@ -344,7 +284,6 @@
     </div>
   </div>
 
-  <!-- UI chrome -->
   <div id="label-tl">Astro Time Candle</div>
   <div id="label-bl">Wei Jueran · Philadelphia · 14.0°C</div>
   <div id="temp-gauge">
@@ -362,50 +301,47 @@
   <script type="module">
     import * as THREE from 'three';
 
-    // ── DOM ──────────────────────────────────────────────────
-    const cursorDot   = document.getElementById('cursor');
-    const cursorRing  = document.getElementById('cursor-ring');
-    const entry       = document.getElementById('entry');
-    const enterBtn    = document.getElementById('enter-btn');
-    const statusEl    = document.getElementById('status');
-    const cardLayer   = document.getElementById('card-layer');
-    const cards       = [...document.querySelectorAll('.card')];
-    const dotsWrap    = document.getElementById('dots');
-    const scrollHint  = document.getElementById('scroll-hint');
-    const bgAudio     = document.getElementById('bg-audio');
-    const heatRing    = document.getElementById('heat-ring');
-    const tempGauge   = document.getElementById('temp-gauge');
-    const tempFill    = document.getElementById('temp-fill');
-    const tempVal     = document.getElementById('temp-val');
-    const container   = document.getElementById('canvas-container');
+    const cursorDot  = document.getElementById('cursor');
+    const cursorRing = document.getElementById('cursor-ring');
+    const entry      = document.getElementById('entry');
+    const enterBtn   = document.getElementById('enter-btn');
+    const statusEl   = document.getElementById('status');
+    const cardLayer  = document.getElementById('card-layer');
+    const cards      = [...document.querySelectorAll('.card')];
+    const dotsWrap   = document.getElementById('dots');
+    const scrollHint = document.getElementById('scroll-hint');
+    const bgAudio    = document.getElementById('bg-audio');
+    const heatRing   = document.getElementById('heat-ring');
+    const tempGauge  = document.getElementById('temp-gauge');
+    const tempFill   = document.getElementById('temp-fill');
+    const tempVal    = document.getElementById('temp-val');
+    const container  = document.getElementById('canvas-container');
 
-    // ── State ────────────────────────────────────────────────
-    let isStarted    = false;
-    let cardsShown   = false;
-    let currentIdx   = 0;
-    let wheelLocked  = false;
-    let enterTime    = 0;
-    let audioCtx, analyser, gainNode, dataArray, audioReady = false;
+    let isStarted  = false;
+    let cardsShown = false;
+    let currentIdx = 0;
+    let enterTime  = 0;
+    let audioCtx, analyser, dataArray, audioReady = false;
 
     // ── Cursor ───────────────────────────────────────────────
     let mx = 0, my = 0, rx = 0, ry = 0;
     window.addEventListener('mousemove', e => {
       mx = e.clientX; my = e.clientY;
-      cursorDot.style.transform  = `translate(${mx}px, ${my}px) translate(-50%,-50%)`;
+      cursorDot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
     });
-    (function ringFollow() {
+    (function ring() {
       rx += (mx - rx) * 0.12;
       ry += (my - ry) * 0.12;
-      cursorRing.style.transform = `translate(${rx}px, ${ry}px) translate(-50%,-50%)`;
-      requestAnimationFrame(ringFollow);
+      cursorRing.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
+      requestAnimationFrame(ring);
     })();
 
-    // ── THREE.js ─────────────────────────────────────────────
+    // ── THREE ────────────────────────────────────────────────
     let scene, camera, renderer, shell, core, particles;
 
     function initVisuals() {
       scene  = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 1000);
+      camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 1000);
       camera.position.z = 14;
 
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -414,43 +350,28 @@
       container.appendChild(renderer.domElement);
 
       const group = new THREE.Group();
-
       core = new THREE.Mesh(
-        new THREE.CylinderGeometry(1.1, 1.1, 8, 32),
-        new THREE.MeshStandardMaterial({ color: 0x4A5B61, metalness: 0.95, roughness: 0.05 })
+        new THREE.CylinderGeometry(1.1,1.1,8,32),
+        new THREE.MeshStandardMaterial({ color:0x4A5B61, metalness:0.95, roughness:0.05 })
       );
-
       shell = new THREE.Mesh(
-        new THREE.CylinderGeometry(2.8, 2.8, 9, 64),
+        new THREE.CylinderGeometry(2.8,2.8,9,64),
         new THREE.MeshPhysicalMaterial({
-          color: 0x83B3BE,
-          transmission: 0.82,
-          roughness: 0.12,
-          thickness: 5,
-          transparent: true,
-          opacity: 0.88,
-          emissive: 0x83B3BE,
-          emissiveIntensity: 0.08,
-          envMapIntensity: 0.5
+          color:0x83B3BE, transmission:0.82, roughness:0.12, thickness:5,
+          transparent:true, opacity:0.88, emissive:0x83B3BE, emissiveIntensity:0.08
         })
       );
-
       group.add(core, shell);
       scene.add(group);
 
-      // Rim light
       const rim = new THREE.PointLight(0x83B3BE, 1.8, 60);
-      rim.position.set(4, 6, 8);
+      rim.position.set(4,6,8);
       scene.add(rim);
-
-      // Fill light
       const fill = new THREE.PointLight(0xD9C5B2, 0.6, 40);
-      fill.position.set(-5, -2, 4);
+      fill.position.set(-5,-2,4);
       scene.add(fill);
-
       scene.add(new THREE.AmbientLight(0x83B3BE, 0.25));
 
-      // Particles
       const pc = document.createElement('canvas');
       pc.width = pc.height = 64;
       const pctx = pc.getContext('2d');
@@ -458,54 +379,42 @@
       g.addColorStop(0,   'rgba(242,242,242,1)');
       g.addColorStop(0.3, 'rgba(131,179,190,0.5)');
       g.addColorStop(1,   'rgba(26,28,32,0)');
-      pctx.fillStyle = g;
-      pctx.fillRect(0,0,64,64);
+      pctx.fillStyle = g; pctx.fillRect(0,0,64,64);
 
       const geo = new THREE.BufferGeometry();
-      const pos = new Float32Array(8000 * 3);
-      for (let i = 0; i < pos.length; i++) pos[i] = (Math.random() - 0.5) * 90;
-      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-
+      const pos = new Float32Array(8000*3);
+      for (let i=0;i<pos.length;i++) pos[i]=(Math.random()-0.5)*90;
+      geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
       particles = new THREE.Points(geo, new THREE.PointsMaterial({
-        size: 0.55, map: new THREE.CanvasTexture(pc),
-        transparent: true, opacity: 0.5,
-        blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
+        size:0.55, map:new THREE.CanvasTexture(pc),
+        transparent:true, opacity:0.5,
+        blending:THREE.AdditiveBlending, depthWrite:false, sizeAttenuation:true
       }));
       scene.add(particles);
 
       renderLoop();
     }
 
-    let freqVal = 0;
     function renderLoop() {
       requestAnimationFrame(renderLoop);
-
-      const t = Date.now() * 0.001;
+      const t = Date.now()*0.001;
       shell.rotation.y += 0.00724;
       core.rotation.y  -= 0.003;
-      if (particles) {
-        particles.rotation.y += 0.00025;
-        particles.rotation.x  = Math.sin(t * 0.08) * 0.04;
-      }
-
-      // Subtle breathe
-      const breathe = 1 + Math.sin(t * 0.6) * 0.008;
-      shell.scale.set(breathe, 1, breathe);
+      particles.rotation.y += 0.00025;
+      particles.rotation.x  = Math.sin(t*0.08)*0.04;
+      const b = 1 + Math.sin(t*0.6)*0.008;
+      shell.scale.set(b,1,b);
 
       if (isStarted && analyser) {
         analyser.getByteFrequencyData(dataArray);
-        let sum = 0;
-        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
-        freqVal = sum / dataArray.length;
-        const intensity = 0.08 + freqVal / 70;
-        shell.material.emissiveIntensity = intensity;
-
-        // Heat ring reacts to audio
-        const ringOpacity = Math.min(freqVal / 60, 0.6);
-        heatRing.style.borderColor = `rgba(131,179,190,${ringOpacity})`;
-        heatRing.style.boxShadow   = `0 0 ${20 + freqVal}px rgba(131,179,190,${ringOpacity * 0.4})`;
+        let sum=0;
+        for (let i=0;i<dataArray.length;i++) sum+=dataArray[i];
+        const freq = sum/dataArray.length;
+        shell.material.emissiveIntensity = 0.08 + freq/70;
+        const ro = Math.min(freq/60, 0.6);
+        heatRing.style.borderColor = `rgba(131,179,190,${ro})`;
+        heatRing.style.boxShadow   = `0 0 ${20+freq}px rgba(131,179,190,${ro*0.4})`;
       }
-
       renderer.render(scene, camera);
     }
 
@@ -516,30 +425,28 @@
       audioCtx = new AC();
       const src = audioCtx.createMediaElementSource(bgAudio);
       analyser  = audioCtx.createAnalyser();
-      gainNode  = audioCtx.createGain();
+      const gain = audioCtx.createGain();
       analyser.fftSize = 64;
       analyser.smoothingTimeConstant = 0.85;
-      gainNode.gain.value = 2.0;
+      gain.gain.value = 2.0;
       dataArray = new Uint8Array(analyser.frequencyBinCount);
-      src.connect(gainNode);
-      gainNode.connect(analyser);
-      analyser.connect(audioCtx.destination);
+      src.connect(gain); gain.connect(analyser); analyser.connect(audioCtx.destination);
       audioReady = true;
     }
 
     // ── Dots ─────────────────────────────────────────────────
     cards.forEach((_, i) => {
       const d = document.createElement('div');
-      d.className = 'dot' + (i === 0 ? ' on' : '');
+      d.className = 'dot' + (i===0?' on':'');
       d.addEventListener('click', () => showCard(i));
       dotsWrap.appendChild(d);
     });
     const dots = [...document.querySelectorAll('.dot')];
 
     function showCard(n) {
-      currentIdx = Math.max(0, Math.min(cards.length - 1, n));
-      cards.forEach((c, i) => c.classList.toggle('active', i === currentIdx));
-      dots.forEach((d, i)  => d.classList.toggle('on',     i === currentIdx));
+      currentIdx = Math.max(0, Math.min(cards.length-1, n));
+      cards.forEach((c,i) => c.classList.toggle('active', i===currentIdx));
+      dots.forEach((d,i)  => d.classList.toggle('on',     i===currentIdx));
     }
 
     function revealCards() {
@@ -548,25 +455,42 @@
       cardLayer.classList.add('active');
       dotsWrap.classList.add('active');
       scrollHint.style.opacity = '0.7';
-      setTimeout(() => { scrollHint.style.opacity = '0.25'; }, 2200);
+      setTimeout(() => { scrollHint.style.opacity = '0.2'; }, 2200);
     }
 
-    // ── Wheel ────────────────────────────────────────────────
+    // ── Wheel — accumulator pattern ──────────────────────────
+    // Accumulate deltaY; only flip when threshold crossed.
+    // After a flip, reset accumulator AND start a cooldown so
+    // the residual inertia from the same gesture is discarded.
+    let wheelAccum   = 0;
+    let wheelCooldown = false;
+    const THRESHOLD  = 120;   // px to accumulate before flipping
+    const COOLDOWN   = 800;   // ms to ignore wheel after a flip
+
     window.addEventListener('wheel', e => {
       if (!isStarted) return;
       e.preventDefault();
-      // Hard gate: 2s after enter to kill trackpad inertia
+
+      // Hard gate after ENTER to kill initial inertia burst
       if (Date.now() - enterTime < 2000) return;
-      if (wheelLocked) return;
-      wheelLocked = true;
 
-      if (!cardsShown) {
-        revealCards();
-      } else {
-        showCard(currentIdx + (e.deltaY > 0 ? 1 : -1));
+      // During cooldown, drain accumulator silently
+      if (wheelCooldown) { wheelAccum = 0; return; }
+
+      wheelAccum += e.deltaY;
+
+      if (Math.abs(wheelAccum) >= THRESHOLD) {
+        const dir = wheelAccum > 0 ? 1 : -1;
+        wheelAccum   = 0;
+        wheelCooldown = true;
+        setTimeout(() => { wheelCooldown = false; }, COOLDOWN);
+
+        if (!cardsShown) {
+          revealCards();
+        } else {
+          showCard(currentIdx + dir);
+        }
       }
-
-      setTimeout(() => { wheelLocked = false; }, 700);
     }, { passive: false });
 
     // ── Enter ────────────────────────────────────────────────
@@ -580,33 +504,24 @@
         if (audioCtx.state === 'suspended') await audioCtx.resume();
         bgAudio.volume = 1.0;
         await bgAudio.play();
-      } catch(e) {
-        console.warn('Audio blocked', e);
-      }
+      } catch(e) { console.warn('Audio blocked', e); }
 
       entry.style.opacity = '0';
       setTimeout(() => {
         entry.style.display = 'none';
-
-        // Show temperature gauge (embodied detail)
         tempGauge.style.opacity = '0.6';
         tempFill.style.width = '72%';
 
-        // Animate temp number
         let t = 0;
-        const tInterval = setInterval(() => {
+        setInterval(() => {
           t += 0.08;
-          const v = (14.0 + Math.sin(t) * 0.3).toFixed(1);
-          tempVal.innerText = v + '°C';
-          if (!isStarted) clearInterval(tInterval);
+          tempVal.innerText = (14.0 + Math.sin(t)*0.3).toFixed(1) + '°C';
         }, 200);
 
-        // Show scroll hint after 1.5s
         setTimeout(() => {
           scrollHint.style.opacity = '0.55';
           setTimeout(() => { scrollHint.style.opacity = '0.2'; }, 2800);
         }, 1500);
-
       }, 1600);
     }
 
@@ -623,7 +538,7 @@
     enterBtn.addEventListener('click', startExperience);
 
     window.addEventListener('resize', () => {
-      camera.aspect = innerWidth / innerHeight;
+      camera.aspect = innerWidth/innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(innerWidth, innerHeight);
     });
