@@ -23,15 +23,14 @@
       cursor: none;
     }
 
-    /* cursor — hidden on touch */
     #cursor, #cursor-ring {
-      position: fixed; pointer-events: none; z-index: 99999;
+      position: fixed; pointer-events: none;
       transform: translate(-50%,-50%);
     }
     #cursor {
       width: 6px; height: 6px;
       background: var(--blue); border-radius: 50%;
-      mix-blend-mode: screen; z-index: 99999;
+      z-index: 99999; mix-blend-mode: screen;
     }
     #cursor-ring {
       width: 28px; height: 28px;
@@ -168,17 +167,16 @@
       50%      { opacity: 1;   width: 24px; }
     }
 
-    /* ── Card layer ── */
+    /* ── Cards ── */
     #card-layer {
       position: fixed; inset: 0; z-index: 20;
       display: none; pointer-events: none;
     }
     #card-layer.active { display: block; }
 
-    /* Only ONE card visible at a time — others are display:none for perf */
     .card {
       position: absolute; inset: 0;
-      display: none;                          /* hidden by default */
+      display: none;
       flex-direction: column; justify-content: flex-end;
       padding: 0 10vw 10vh 10vw;
       opacity: 0; transform: translateY(24px);
@@ -186,20 +184,14 @@
                   transform 0.9s cubic-bezier(0.4,0,0.2,1);
       pointer-events: none;
     }
-    .card.visible {
-      display: flex;                          /* mount into layout */
-    }
-    .card.active {
-      opacity: 1; transform: translateY(0);
-      pointer-events: auto;
-    }
+    .card.visible { display: flex; }
+    .card.active  { opacity: 1; transform: translateY(0); pointer-events: auto; }
     .card::after {
       content: ''; position: absolute;
-      bottom: 0; left: 0; right: 0; height: 55%;
-      background: linear-gradient(to top, rgba(26,28,32,0.88) 0%, transparent 100%);
+      bottom: 0; left: 0; right: 0; height: 50%;
+      background: linear-gradient(to top, rgba(26,28,32,0.85) 0%, transparent 100%);
       z-index: -1; pointer-events: none;
     }
-
     .card-index {
       font-family: 'Courier Prime', monospace;
       font-size: 9px; letter-spacing: 0.5em;
@@ -207,7 +199,7 @@
       text-transform: uppercase; margin-bottom: 20px;
     }
     .card-title {
-      font-size: clamp(26px, 4.5vw, 56px);
+      font-size: clamp(26px, 4.2vw, 54px);
       font-weight: 300; letter-spacing: 0.18em;
       text-transform: uppercase; color: var(--white);
       line-height: 1.1; margin-bottom: 24px;
@@ -215,12 +207,12 @@
     .card-title em { font-style: italic; color: var(--blue); }
     .card.zh .card-title {
       text-transform: none; letter-spacing: 0.12em;
-      font-size: clamp(22px, 3.8vw, 48px);
+      font-size: clamp(22px, 3.6vw, 46px);
     }
     .card-body {
-      font-size: clamp(13px, 1.4vw, 18px);
+      font-size: clamp(13px, 1.3vw, 17px);
       font-weight: 300; line-height: 1.9;
-      letter-spacing: 0.04em; opacity: 0.72; max-width: 560px;
+      letter-spacing: 0.04em; opacity: 0.72; max-width: 540px;
     }
     .card.zh .card-body { letter-spacing: 0.08em; }
 
@@ -244,7 +236,8 @@
 
     /* ── Heat ring ── */
     #heat-ring {
-      position: fixed; width: 340px; height: 340px; border-radius: 50%;
+      position: fixed;
+      width: 300px; height: 300px; border-radius: 50%;
       border: 1px solid rgba(131,179,190,0);
       left: 50%; top: 50%; transform: translate(-50%,-50%);
       pointer-events: none; z-index: 5;
@@ -252,14 +245,14 @@
     }
 
     @media (max-width: 768px) {
-      #label-tl  { top: 20px; left: 20px; font-size: 8px; }
-      #label-bl  { bottom: 20px; left: 20px; }
-      .card      { padding: 0 6vw 16vh 6vw; }
-      #dots      { right: 16px; }
+      #label-tl    { top: 20px; left: 20px; font-size: 8px; }
+      #label-bl    { bottom: 20px; left: 20px; }
+      .card        { padding: 0 6vw 16vh 6vw; }
+      #dots        { right: 16px; }
       #scroll-hint { right: 16px; bottom: 20px; }
       #temp-gauge  { right: 16px; top: 20px; }
       #lang-toggle { top: 20px; }
-      #heat-ring   { width: 220px; height: 220px; }
+      #heat-ring   { width: 200px; height: 200px; }
     }
   </style>
 </head>
@@ -391,7 +384,7 @@
     let currentLang = 'en';
     let audioCtx, analyser, dataArray, audioReady = false;
 
-    // ── Cursor (desktop only) ────────────────────────────────
+    // ── Cursor ────────────────────────────────────────────────
     let mx=0,my=0,rx=0,ry=0;
     window.addEventListener('mousemove', e => {
       mx=e.clientX; my=e.clientY;
@@ -403,27 +396,20 @@
       requestAnimationFrame(ring);
     })();
 
-    // ── Card management ──────────────────────────────────────
-    // Only the active card gets display:flex — all others display:none
+    // ── Cards ─────────────────────────────────────────────────
     function showCard(n) {
       currentIdx = Math.max(0, Math.min(5, n));
-
-      // Remove visible+active from all
       document.querySelectorAll('.card').forEach(c => {
-        c.classList.remove('visible', 'active');
+        c.classList.remove('visible','active');
       });
-
-      // Mount and animate the target card
       const target = document.querySelector(
         `.card.${currentLang}[data-index="${currentIdx}"]`
       );
       if (target) {
         target.classList.add('visible');
-        // Force reflow so transition fires
         void target.offsetWidth;
         target.classList.add('active');
       }
-
       dots.forEach((d,i) => d.classList.toggle('on', i===currentIdx));
     }
 
@@ -433,10 +419,9 @@
       scrollHint.innerText = lang==='zh' ? '滚动' : 'Scroll';
       showCard(currentIdx);
     }
-
     langBtns.forEach(b => b.addEventListener('click', () => switchLang(b.dataset.lang)));
 
-    // ── Dots ─────────────────────────────────────────────────
+    // ── Dots ──────────────────────────────────────────────────
     for (let i=0;i<6;i++){
       const d=document.createElement('div');
       d.className='dot'+(i===0?' on':'');
@@ -453,11 +438,10 @@
       langToggle.classList.add('visible');
       scrollHint.style.opacity='0.7';
       setTimeout(()=>{ scrollHint.style.opacity='0.2'; },2200);
-      // Ensure card 0 is shown
       showCard(0);
     }
 
-    // ── Wheel (desktop) ──────────────────────────────────────
+    // ── Wheel ─────────────────────────────────────────────────
     let wheelAccum=0, wheelCooldown=false;
     const THRESHOLD=120, COOLDOWN=800;
 
@@ -469,44 +453,40 @@
       wheelAccum+=e.deltaY;
       if(Math.abs(wheelAccum)>=THRESHOLD){
         const dir=wheelAccum>0?1:-1;
-        wheelAccum=0;
-        wheelCooldown=true;
+        wheelAccum=0; wheelCooldown=true;
         setTimeout(()=>{ wheelCooldown=false; },COOLDOWN);
         if(!cardsShown){ revealCards(); }
         else { showCard(currentIdx+dir); }
       }
     },{ passive:false });
 
-    // ── Touch (mobile) ───────────────────────────────────────
+    // ── Touch ─────────────────────────────────────────────────
     let touchStartY=0, touchStartTime=0;
-
     window.addEventListener('touchstart', e => {
       if(!isStarted)return;
       touchStartY=e.touches[0].clientY;
       touchStartTime=Date.now();
     },{ passive:true });
-
     window.addEventListener('touchend', e => {
       if(!isStarted)return;
       if(Date.now()-enterTime<1000)return;
-
       const dy=touchStartY-e.changedTouches[0].clientY;
       const dt=Date.now()-touchStartTime;
-      // Only register intentional swipes: >40px, <400ms
       if(Math.abs(dy)<40||dt>400)return;
-
       const dir=dy>0?1:-1;
       if(!cardsShown){ revealCards(); }
       else { showCard(currentIdx+dir); }
     },{ passive:true });
 
-    // ── THREE.js ─────────────────────────────────────────────
+    // ── THREE ─────────────────────────────────────────────────
     let scene,camera,renderer,shell,core,particles;
 
     function initVisuals(){
       scene=new THREE.Scene();
-      camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,1000);
-      camera.position.z=14;
+
+      // Camera pulled back so candle fits screen properly
+      camera=new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 1000);
+      camera.position.z=22;
 
       renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
       renderer.setSize(innerWidth,innerHeight);
@@ -514,24 +494,32 @@
       container.appendChild(renderer.domElement);
 
       const group=new THREE.Group();
+
       core=new THREE.Mesh(
-        new THREE.CylinderGeometry(1.1,1.1,8,32),
+        new THREE.CylinderGeometry(0.9,0.9,6,32),
         new THREE.MeshStandardMaterial({color:0x4A5B61,metalness:0.95,roughness:0.05})
       );
+
       shell=new THREE.Mesh(
-        new THREE.CylinderGeometry(2.8,2.8,9,64),
+        new THREE.CylinderGeometry(2.2,2.2,7,64),
         new THREE.MeshPhysicalMaterial({
-          color:0x83B3BE,transmission:0.82,roughness:0.12,thickness:5,
-          transparent:true,opacity:0.88,emissive:0x83B3BE,emissiveIntensity:0.08
+          color:0x83B3BE, transmission:0.82, roughness:0.12, thickness:4,
+          transparent:true, opacity:0.88,
+          emissive:0x83B3BE, emissiveIntensity:0.08
         })
       );
-      group.add(core,shell); scene.add(group);
 
-      const rim=new THREE.PointLight(0x83B3BE,1.8,60);
-      rim.position.set(4,6,8); scene.add(rim);
-      scene.add(new THREE.PointLight(0xD9C5B2,0.6,40)).position.set(-5,-2,4);
+      group.add(core,shell);
+      group.position.set(0,0,0); // explicitly centered
+      scene.add(group);
+
+      const rim=new THREE.PointLight(0x83B3BE,1.8,80);
+      rim.position.set(4,6,10); scene.add(rim);
+      const fill=new THREE.PointLight(0xD9C5B2,0.6,50);
+      fill.position.set(-5,-2,6); scene.add(fill);
       scene.add(new THREE.AmbientLight(0x83B3BE,0.25));
 
+      // Particles
       const pc=document.createElement('canvas');
       pc.width=pc.height=64;
       const pctx=pc.getContext('2d');
@@ -543,12 +531,12 @@
 
       const geo=new THREE.BufferGeometry();
       const pos=new Float32Array(8000*3);
-      for(let i=0;i<pos.length;i++) pos[i]=(Math.random()-0.5)*90;
+      for(let i=0;i<pos.length;i++) pos[i]=(Math.random()-0.5)*80;
       geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
       particles=new THREE.Points(geo,new THREE.PointsMaterial({
-        size:0.55,map:new THREE.CanvasTexture(pc),
-        transparent:true,opacity:0.5,
-        blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true
+        size:0.5, map:new THREE.CanvasTexture(pc),
+        transparent:true, opacity:0.5,
+        blending:THREE.AdditiveBlending, depthWrite:false, sizeAttenuation:true
       }));
       scene.add(particles);
       renderLoop();
@@ -561,7 +549,8 @@
       core.rotation.y-=0.003;
       particles.rotation.y+=0.00025;
       particles.rotation.x=Math.sin(t*0.08)*0.04;
-      shell.scale.set(1+Math.sin(t*0.6)*0.008,1,1+Math.sin(t*0.6)*0.008);
+      const b=1+Math.sin(t*0.6)*0.007;
+      shell.scale.set(b,1,b);
 
       if(isStarted&&analyser){
         analyser.getByteFrequencyData(dataArray);
