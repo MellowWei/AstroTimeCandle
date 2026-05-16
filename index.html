@@ -631,7 +631,7 @@
       const progress = currentIdx / MAX_INDEX;
 
       if (shell) {
-        shell.material.opacity = 0.88 - progress * 0.45;
+        shell.material.opacity = 0.34 - progress * 0.12;
         shell.material.emissiveIntensity = 0.08 + progress * 0.35;
         shell.scale.set(
           1 + progress * 0.08,
@@ -642,12 +642,12 @@
 
       if (core) {
         core.material.emissive = new THREE.Color(0x83B3BE);
-        core.material.emissiveIntensity = progress * 0.9;
-        core.material.opacity = 0.62 + progress * 0.35;
+        core.material.emissiveIntensity = 0.65 + progress * 0.9;
+        core.material.opacity = 0.95;
         core.scale.set(
-          1.35 + progress * 0.28,
-          1.35 + progress * 0.12,
-          1.35 + progress * 0.28
+          2.1 + progress * 0.45,
+          2.1 + progress * 0.2,
+          2.1 + progress * 0.45
         );
       }
 
@@ -767,11 +767,11 @@
       heartShape.bezierCurveTo(0.9, 1.1, 0, 1.1, 0, 0.6);
 
       const heartGeo = new THREE.ExtrudeGeometry(heartShape, {
-        depth: 0.45,
+        depth: 0.75,
         bevelEnabled: true,
-        bevelThickness: 0.08,
-        bevelSize: 0.08,
-        bevelSegments: 8
+        bevelThickness: 0.14,
+        bevelSize: 0.14,
+        bevelSegments: 12
       });
 
       heartGeo.center();
@@ -795,21 +795,22 @@
         createHeartGeometry(),
         new THREE.MeshPhysicalMaterial({
           color:0x83B3BE,
-          metalness:0.05,
-          roughness:0.05,
-          transmission:0.78,
-          thickness:1.2,
+          metalness:0.03,
+          roughness:0.02,
+          transmission:0.82,
+          thickness:1.4,
           transparent:true,
-          opacity:0.62,
+          opacity:0.95,
           emissive:0x83B3BE,
-          emissiveIntensity:0
+          emissiveIntensity:0.65,
+          side: THREE.DoubleSide
         })
       );
 
-      core.scale.set(1.35,1.35,1.35);
+      core.scale.set(2.1, 2.1, 2.1);
       core.rotation.z = Math.PI;
-      core.rotation.y = 0.12;
-      core.position.set(0,0,0.15);
+      core.rotation.y = 0;
+      core.position.set(0, 0, 2.35);
 
       shell=new THREE.Mesh(
         new THREE.CylinderGeometry(2.2,2.2,7,64),
@@ -819,7 +820,7 @@
           roughness:0.12,
           thickness:4,
           transparent:true,
-          opacity:0.88,
+          opacity:0.34,
           emissive:0x83B3BE,
           emissiveIntensity:0.08
         })
@@ -829,15 +830,19 @@
       group.position.set(0,0,0);
       scene.add(group);
 
-      const rim=new THREE.PointLight(0x83B3BE,1.8,80);
+      const rim=new THREE.PointLight(0x83B3BE,2.6,90);
       rim.position.set(4,6,10);
       scene.add(rim);
+
+      const front=new THREE.PointLight(0xD9C5B2,1.4,60);
+      front.position.set(0,1,12);
+      scene.add(front);
 
       const fill=new THREE.PointLight(0xD9C5B2,0.6,50);
       fill.position.set(-5,-2,6);
       scene.add(fill);
 
-      scene.add(new THREE.AmbientLight(0x83B3BE,0.25));
+      scene.add(new THREE.AmbientLight(0x83B3BE,0.35));
 
       const pc=document.createElement('canvas');
       pc.width=pc.height=64;
@@ -874,7 +879,7 @@
       const t=Date.now()*0.001;
 
       shell.rotation.y+=0.00724;
-      core.rotation.y-=0.003;
+      core.rotation.y+=0.0015;
       particles.rotation.y+=0.00025;
       particles.rotation.x=Math.sin(t*0.08)*0.04;
 
@@ -885,8 +890,8 @@
         for(let i=0;i<dataArray.length;i++) sum+=dataArray[i];
 
         const freq=sum/dataArray.length;
-        shell.material.emissiveIntensity += freq / 9000;
-        core.material.emissiveIntensity += freq / 14000;
+        shell.material.emissiveIntensity += freq / 12000;
+        core.material.emissiveIntensity += freq / 18000;
 
         const ro=Math.min(freq/120,0.28);
         heatRing.style.boxShadow += `, 0 0 ${12+freq/2}px rgba(131,179,190,${ro*0.18})`;
