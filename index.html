@@ -9,11 +9,11 @@
 
   <style>
     :root {
-      --blue:  #83B3BE;
-      --deep:  #4A5B61;
+      --blue: #83B3BE;
+      --deep: #4A5B61;
       --white: #F2F2F2;
       --black: #1A1C20;
-      --warm:  #D9C5B2;
+      --warm: #D9C5B2;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -86,7 +86,7 @@
 
     @keyframes lineGrow {
       from { transform: scaleY(0); opacity: 0; }
-      to   { transform: scaleY(1); opacity: 1; }
+      to { transform: scaleY(1); opacity: 1; }
     }
 
     #enter-btn {
@@ -163,10 +163,7 @@
       transform: translateX(-50%);
       z-index: 40;
       display: none;
-      gap: 0;
       font-family: 'Courier Prime', monospace;
-      font-size: 9px;
-      letter-spacing: 0.3em;
     }
 
     #lang-toggle.visible { display: flex; }
@@ -225,7 +222,7 @@
       height: 100%;
       background: var(--blue);
       width: 0%;
-      transition: width 3s ease;
+      transition: width 1.1s ease;
     }
 
     #scroll-hint {
@@ -257,7 +254,7 @@
 
     @keyframes scrollPulse {
       0%,100% { opacity: 0.3; width: 12px; }
-      50%     { opacity: 1;   width: 24px; }
+      50% { opacity: 1; width: 24px; }
     }
 
     #card-layer {
@@ -412,7 +409,7 @@
       transform: translate(-50%,-50%);
       pointer-events: none;
       z-index: 5;
-      transition: border-color 0.3s, box-shadow 0.3s;
+      transition: border-color 0.8s ease, box-shadow 0.8s ease, transform 0.8s ease;
     }
 
     @media (max-width: 768px) {
@@ -429,7 +426,6 @@
 </head>
 
 <body>
-
   <div id="cursor"></div>
   <div id="cursor-ring"></div>
   <div id="canvas-container"></div>
@@ -570,27 +566,27 @@
   <script type="module">
     import * as THREE from 'three';
 
-    const cursorDot  = document.getElementById('cursor');
+    const cursorDot = document.getElementById('cursor');
     const cursorRing = document.getElementById('cursor-ring');
-    const entry      = document.getElementById('entry');
-    const enterBtn   = document.getElementById('enter-btn');
-    const statusEl   = document.getElementById('status');
-    const cardLayer  = document.getElementById('card-layer');
-    const dotsWrap   = document.getElementById('dots');
+    const entry = document.getElementById('entry');
+    const enterBtn = document.getElementById('enter-btn');
+    const statusEl = document.getElementById('status');
+    const cardLayer = document.getElementById('card-layer');
+    const dotsWrap = document.getElementById('dots');
     const scrollHint = document.getElementById('scroll-hint');
-    const bgAudio    = document.getElementById('bg-audio');
-    const heatRing   = document.getElementById('heat-ring');
-    const tempGauge  = document.getElementById('temp-gauge');
-    const tempFill   = document.getElementById('temp-fill');
-    const tempVal    = document.getElementById('temp-val');
-    const container  = document.getElementById('canvas-container');
+    const bgAudio = document.getElementById('bg-audio');
+    const heatRing = document.getElementById('heat-ring');
+    const tempGauge = document.getElementById('temp-gauge');
+    const tempFill = document.getElementById('temp-fill');
+    const tempVal = document.getElementById('temp-val');
+    const container = document.getElementById('canvas-container');
     const langToggle = document.getElementById('lang-toggle');
-    const langBtns   = [...document.querySelectorAll('.lang-btn')];
+    const langBtns = [...document.querySelectorAll('.lang-btn')];
 
-    let isStarted   = false;
-    let cardsShown  = false;
-    let currentIdx  = 0;
-    let enterTime   = 0;
+    let isStarted = false;
+    let cardsShown = false;
+    let currentIdx = 0;
+    let enterTime = 0;
     let currentLang = 'en';
     let audioCtx, analyser, dataArray, audioReady = false;
 
@@ -628,6 +624,47 @@
       }
 
       dots.forEach((d,i) => d.classList.toggle('on', i===currentIdx));
+      updateRevealProgress();
+    }
+
+    function updateRevealProgress() {
+      const progress = currentIdx / MAX_INDEX;
+
+      if (shell) {
+        shell.material.opacity = 0.88 - progress * 0.45;
+        shell.material.emissiveIntensity = 0.08 + progress * 0.35;
+        shell.scale.set(
+          1 + progress * 0.08,
+          1 - progress * 0.05,
+          1 + progress * 0.08
+        );
+      }
+
+      if (core) {
+        core.material.emissive = new THREE.Color(0x83B3BE);
+        core.material.emissiveIntensity = progress * 0.55;
+        core.scale.set(
+          1 + progress * 0.18,
+          1 + progress * 0.04,
+          1 + progress * 0.18
+        );
+      }
+
+      if (heatRing) {
+        const ringOpacity = 0.08 + progress * 0.5;
+        heatRing.style.borderColor = `rgba(131,179,190,${ringOpacity})`;
+        heatRing.style.boxShadow = `0 0 ${30 + progress * 90}px rgba(131,179,190,${ringOpacity * 0.45})`;
+        heatRing.style.transform = `translate(-50%,-50%) scale(${1 + progress * 0.25})`;
+      }
+
+      if (tempFill) {
+        tempFill.style.width = `${30 + progress * 60}%`;
+      }
+
+      if (tempVal) {
+        const temp = 14.0 + progress * 3.7;
+        tempVal.innerText = temp.toFixed(1) + '°C';
+      }
     }
 
     function switchLang(lang) {
@@ -737,7 +774,9 @@
         new THREE.MeshStandardMaterial({
           color:0x4A5B61,
           metalness:0.95,
-          roughness:0.05
+          roughness:0.05,
+          emissive:0x83B3BE,
+          emissiveIntensity:0
         })
       );
 
@@ -808,9 +847,6 @@
       particles.rotation.y+=0.00025;
       particles.rotation.x=Math.sin(t*0.08)*0.04;
 
-      const b=1+Math.sin(t*0.6)*0.007;
-      shell.scale.set(b,1,b);
-
       if(isStarted && analyser){
         analyser.getByteFrequencyData(dataArray);
 
@@ -818,11 +854,10 @@
         for(let i=0;i<dataArray.length;i++) sum+=dataArray[i];
 
         const freq=sum/dataArray.length;
-        shell.material.emissiveIntensity=0.08+freq/70;
+        shell.material.emissiveIntensity += freq / 9000;
 
-        const ro=Math.min(freq/60,0.6);
-        heatRing.style.borderColor=`rgba(131,179,190,${ro})`;
-        heatRing.style.boxShadow=`0 0 ${20+freq}px rgba(131,179,190,${ro*0.4})`;
+        const ro=Math.min(freq/120,0.28);
+        heatRing.style.boxShadow += `, 0 0 ${12+freq/2}px rgba(131,179,190,${ro*0.18})`;
       }
 
       renderer.render(scene,camera);
@@ -873,13 +908,8 @@
       setTimeout(()=>{
         entry.style.display='none';
         tempGauge.style.opacity='0.6';
-        tempFill.style.width='72%';
-
-        let t=0;
-        setInterval(()=>{
-          t+=0.08;
-          tempVal.innerText=(14.0+Math.sin(t)*0.3).toFixed(1)+'°C';
-        },200);
+        tempFill.style.width='30%';
+        tempVal.innerText='14.0°C';
 
         setTimeout(()=>{
           scrollHint.style.opacity='0.55';
