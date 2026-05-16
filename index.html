@@ -455,7 +455,7 @@
     <div class="card en" data-index="1">
       <div class="card-index">01 — Mechanism</div>
       <h2 class="card-title">What Remains<br>Becomes <em>Visible</em></h2>
-      <p class="card-body">As the outer wax melts, a stable inner core begins to surface. You are not watching time disappear. You are watching what survives.</p>
+      <p class="card-body">As the outer wax melts, a heart-shaped crystal core begins to surface. You are not watching time disappear. You are watching what survives.</p>
     </div>
 
     <div class="card en" data-index="2">
@@ -467,7 +467,7 @@
     <div class="card en" data-index="3">
       <div class="card-index">03 — Contract</div>
       <h2 class="card-title">Heat Is<br>the <em>Filter</em></h2>
-      <p class="card-body">Heat, duration, and attention converge. What emerges is not decoration. It is evidence of presence.</p>
+      <p class="card-body">Heat, duration, and attention converge. What emerges is not decoration. It is a heart-shaped evidence of presence.</p>
     </div>
 
     <div class="card en" data-index="4">
@@ -485,12 +485,12 @@
     <div class="card en" data-index="6">
       <div class="card-index">06 — Reveal Research</div>
       <h2 class="card-title">Temporal Object<br><em>Development</em><br>Archive.</h2>
-      <p class="card-body">The object was never designed to disappear. The shell exists to surrender. The core exists to remain.</p>
+      <p class="card-body">The object was never designed to disappear. The shell exists to surrender. The heart core exists to remain.</p>
     </div>
 
     <div class="card en" data-index="7">
       <div class="card-index">07 — Melt Sequence</div>
-      <h2 class="card-title">Sealed Shell.<br>Surface Yielding.<br><em>Core Exposure.</em></h2>
+      <h2 class="card-title">Sealed Shell.<br>Surface Yielding.<br><em>Heart Exposure.</em></h2>
       <p class="card-body">This archive studies how wax, heat, time, and attention produce visible emotional evidence.</p>
     </div>
 
@@ -503,7 +503,7 @@
     <div class="card zh" data-index="1">
       <div class="card-index">01 — 机制</div>
       <h2 class="card-title">留下的，<br>开始<em>显现</em>。</h2>
-      <p class="card-body">外层蜡质融化，稳定的内芯逐渐浮现。你不是在看时间消失。你是在看，什么东西活了下来。</p>
+      <p class="card-body">外层蜡质融化，爱心水晶内核逐渐浮现。你不是在看时间消失。你是在看，什么东西活了下来。</p>
     </div>
 
     <div class="card zh" data-index="2">
@@ -515,7 +515,7 @@
     <div class="card zh" data-index="3">
       <div class="card-index">03 — 契约</div>
       <h2 class="card-title">热度是<br><em>过滤器</em>。</h2>
-      <p class="card-body">热度、时长与注意力汇聚于此。显现出来的不是装饰。那是存在的证据。</p>
+      <p class="card-body">热度、时长与注意力汇聚于此。显现出来的不是装饰。那是一颗心形的存在证据。</p>
     </div>
 
     <div class="card zh" data-index="4">
@@ -533,12 +533,12 @@
     <div class="card zh" data-index="6">
       <div class="card-index">06 — 显影研究</div>
       <h2 class="card-title">时间物体<br><em>研发档案</em>。</h2>
-      <p class="card-body">这个物体从来不是为了消失而被设计的。外层存在，是为了让渡。内核存在，是为了留下。</p>
+      <p class="card-body">这个物体从来不是为了消失而被设计的。外层存在，是为了让渡。心形内核存在，是为了留下。</p>
     </div>
 
     <div class="card zh" data-index="7">
       <div class="card-index">07 — 融化序列</div>
-      <h2 class="card-title">封闭外壳。<br>表面让渡。<br><em>内核显影。</em></h2>
+      <h2 class="card-title">封闭外壳。<br>表面让渡。<br><em>心形显影。</em></h2>
       <p class="card-body">这个档案研究蜡、热量、时间与注意力如何共同生成可见的情感证据。</p>
     </div>
   </div>
@@ -642,11 +642,12 @@
 
       if (core) {
         core.material.emissive = new THREE.Color(0x83B3BE);
-        core.material.emissiveIntensity = progress * 0.55;
+        core.material.emissiveIntensity = progress * 0.9;
+        core.material.opacity = 0.62 + progress * 0.35;
         core.scale.set(
-          1 + progress * 0.18,
-          1 + progress * 0.04,
-          1 + progress * 0.18
+          1.35 + progress * 0.28,
+          1.35 + progress * 0.12,
+          1.35 + progress * 0.28
         );
       }
 
@@ -756,6 +757,27 @@
 
     let scene,camera,renderer,shell,core,particles;
 
+    function createHeartGeometry() {
+      const heartShape = new THREE.Shape();
+
+      heartShape.moveTo(0, 0.6);
+      heartShape.bezierCurveTo(0, 1.1, -0.9, 1.1, -0.9, 0.35);
+      heartShape.bezierCurveTo(-0.9, -0.35, 0, -0.85, 0, -1.15);
+      heartShape.bezierCurveTo(0, -0.85, 0.9, -0.35, 0.9, 0.35);
+      heartShape.bezierCurveTo(0.9, 1.1, 0, 1.1, 0, 0.6);
+
+      const heartGeo = new THREE.ExtrudeGeometry(heartShape, {
+        depth: 0.45,
+        bevelEnabled: true,
+        bevelThickness: 0.08,
+        bevelSize: 0.08,
+        bevelSegments: 8
+      });
+
+      heartGeo.center();
+      return heartGeo;
+    }
+
     function initVisuals(){
       scene=new THREE.Scene();
 
@@ -770,15 +792,24 @@
       const group=new THREE.Group();
 
       core=new THREE.Mesh(
-        new THREE.CylinderGeometry(0.9,0.9,6,32),
-        new THREE.MeshStandardMaterial({
-          color:0x4A5B61,
-          metalness:0.95,
+        createHeartGeometry(),
+        new THREE.MeshPhysicalMaterial({
+          color:0x83B3BE,
+          metalness:0.05,
           roughness:0.05,
+          transmission:0.78,
+          thickness:1.2,
+          transparent:true,
+          opacity:0.62,
           emissive:0x83B3BE,
           emissiveIntensity:0
         })
       );
+
+      core.scale.set(1.35,1.35,1.35);
+      core.rotation.z = Math.PI;
+      core.rotation.y = 0.12;
+      core.position.set(0,0,0.15);
 
       shell=new THREE.Mesh(
         new THREE.CylinderGeometry(2.2,2.2,7,64),
@@ -855,6 +886,7 @@
 
         const freq=sum/dataArray.length;
         shell.material.emissiveIntensity += freq / 9000;
+        core.material.emissiveIntensity += freq / 14000;
 
         const ro=Math.min(freq/120,0.28);
         heatRing.style.boxShadow += `, 0 0 ${12+freq/2}px rgba(131,179,190,${ro*0.18})`;
