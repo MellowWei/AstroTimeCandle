@@ -15,247 +15,419 @@
       --black: #1A1C20;
       --warm:  #D9C5B2;
     }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
     html, body {
-      width: 100%; height: 100%; overflow: hidden;
-      background: var(--black); color: var(--white);
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--black);
+      color: var(--white);
       font-family: 'Cormorant Garamond', serif;
       cursor: none;
     }
 
     #cursor, #cursor-ring {
-      position: fixed; pointer-events: none;
+      position: fixed;
+      pointer-events: none;
       transform: translate(-50%,-50%);
     }
+
     #cursor {
-      width: 6px; height: 6px;
-      background: var(--blue); border-radius: 50%;
-      z-index: 99999; mix-blend-mode: screen;
+      width: 6px;
+      height: 6px;
+      background: var(--blue);
+      border-radius: 50%;
+      z-index: 99999;
+      mix-blend-mode: screen;
     }
+
     #cursor-ring {
-      width: 28px; height: 28px;
-      border: 1px solid rgba(131,179,190,0.3); border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      border: 1px solid rgba(131,179,190,0.3);
+      border-radius: 50%;
       z-index: 99998;
     }
+
     @media (hover: none) {
       #cursor, #cursor-ring { display: none; }
       body { cursor: auto; }
     }
 
-    #canvas-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    #canvas-container {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
 
-    /* ── Entry ── */
     #entry {
-      position: fixed; inset: 0; z-index: 50;
-      display: flex; flex-direction: column;
-      justify-content: center; align-items: center;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       background: var(--black);
       transition: opacity 1.6s cubic-bezier(0.4,0,0.2,1);
     }
+
     .entry-line {
-      width: 1px; height: 72px;
+      width: 1px;
+      height: 72px;
       background: linear-gradient(to bottom, transparent, var(--blue));
       margin-bottom: 48px;
-      animation: lineGrow 1.2s ease forwards; transform-origin: top;
+      animation: lineGrow 1.2s ease forwards;
+      transform-origin: top;
     }
+
     @keyframes lineGrow {
       from { transform: scaleY(0); opacity: 0; }
       to   { transform: scaleY(1); opacity: 1; }
     }
+
     #enter-btn {
       font-family: 'Courier Prime', monospace;
-      font-size: 10px; letter-spacing: 0.55em;
-      color: var(--blue); background: transparent;
+      font-size: 10px;
+      letter-spacing: 0.55em;
+      color: var(--blue);
+      background: transparent;
       border: 1px solid rgba(131,179,190,0.4);
-      padding: 14px 48px; cursor: pointer;
+      padding: 14px 48px;
+      cursor: pointer;
       text-transform: uppercase;
-      transition: all 0.5s; position: relative; overflow: hidden;
+      transition: all 0.5s;
+      position: relative;
+      overflow: hidden;
     }
+
     #enter-btn::before {
-      content: ''; position: absolute; inset: 0;
-      background: var(--blue); transform: scaleX(0);
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--blue);
+      transform: scaleX(0);
       transform-origin: left;
-      transition: transform 0.4s cubic-bezier(0.4,0,0.2,1); z-index: -1;
+      transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+      z-index: -1;
     }
+
     #enter-btn:hover::before { transform: scaleX(1); }
     #enter-btn:hover { color: var(--black); border-color: var(--blue); }
+
     #status {
       margin-top: 24px;
       font-family: 'Courier Prime', monospace;
-      font-size: 8px; letter-spacing: 0.3em;
-      opacity: 0.4; transition: color 0.4s, opacity 0.4s;
+      font-size: 8px;
+      letter-spacing: 0.3em;
+      opacity: 0.4;
+      transition: color 0.4s, opacity 0.4s;
       text-transform: uppercase;
     }
 
-    /* ── Labels ── */
     #label-tl {
-      position: fixed; top: 36px; left: 36px;
+      position: fixed;
+      top: 36px;
+      left: 36px;
       font-family: 'Courier Prime', monospace;
-      font-size: 9px; letter-spacing: 0.5em;
-      color: var(--blue); opacity: 0.7; text-transform: uppercase;
-      pointer-events: none; z-index: 10; mix-blend-mode: screen;
-    }
-    #label-bl {
-      position: fixed; bottom: 36px; left: 36px;
-      font-family: 'Courier Prime', monospace;
-      font-size: 8px; letter-spacing: 0.25em;
-      color: var(--white); opacity: 0.3;
-      pointer-events: none; z-index: 10;
+      font-size: 9px;
+      letter-spacing: 0.5em;
+      color: var(--blue);
+      opacity: 0.7;
+      text-transform: uppercase;
+      pointer-events: none;
+      z-index: 10;
+      mix-blend-mode: screen;
     }
 
-    /* ── Lang toggle ── */
-    #lang-toggle {
-      position: fixed; top: 36px; left: 50%;
-      transform: translateX(-50%);
-      z-index: 40; display: none; gap: 0;
+    #label-bl {
+      position: fixed;
+      bottom: 36px;
+      left: 36px;
       font-family: 'Courier Prime', monospace;
-      font-size: 9px; letter-spacing: 0.3em;
+      font-size: 8px;
+      letter-spacing: 0.25em;
+      color: var(--white);
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 10;
     }
+
+    #lang-toggle {
+      position: fixed;
+      top: 36px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      display: none;
+      gap: 0;
+      font-family: 'Courier Prime', monospace;
+      font-size: 9px;
+      letter-spacing: 0.3em;
+    }
+
     #lang-toggle.visible { display: flex; }
+
     .lang-btn {
       padding: 6px 18px;
       border: 1px solid rgba(131,179,190,0.25);
-      color: var(--blue); opacity: 0.4;
-      background: transparent; cursor: pointer;
-      text-transform: uppercase; transition: all 0.3s;
+      color: var(--blue);
+      opacity: 0.4;
+      background: transparent;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.3s;
       font-family: 'Courier Prime', monospace;
-      font-size: 9px; letter-spacing: 0.3em;
+      font-size: 9px;
+      letter-spacing: 0.3em;
     }
+
     .lang-btn:first-child { border-right: none; }
+
     .lang-btn.active {
-      opacity: 1; background: rgba(131,179,190,0.08);
+      opacity: 1;
+      background: rgba(131,179,190,0.08);
       border-color: rgba(131,179,190,0.6);
     }
 
-    /* ── Temp gauge ── */
     #temp-gauge {
-      position: fixed; top: 36px; right: 36px;
+      position: fixed;
+      top: 36px;
+      right: 36px;
       font-family: 'Courier Prime', monospace;
-      font-size: 8px; letter-spacing: 0.3em;
-      color: var(--blue); opacity: 0;
-      pointer-events: none; z-index: 10;
-      text-align: right; transition: opacity 1s;
-    }
-    #temp-bar {
-      width: 60px; height: 1px;
-      background: rgba(131,179,190,0.2);
-      margin-top: 6px; margin-left: auto;
-      position: relative; overflow: hidden;
-    }
-    #temp-fill {
-      position: absolute; left: 0; top: 0;
-      height: 100%; background: var(--blue);
-      width: 0%; transition: width 3s ease;
+      font-size: 8px;
+      letter-spacing: 0.3em;
+      color: var(--blue);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 10;
+      text-align: right;
+      transition: opacity 1s;
     }
 
-    /* ── Scroll hint ── */
-    #scroll-hint {
-      position: fixed; bottom: 36px; right: 36px;
-      font-family: 'Courier Prime', monospace;
-      font-size: 8px; letter-spacing: 0.4em;
-      color: var(--blue); opacity: 0; text-transform: uppercase;
-      pointer-events: none; z-index: 10; transition: opacity 1s;
-      display: flex; align-items: center; gap: 10px;
+    #temp-bar {
+      width: 60px;
+      height: 1px;
+      background: rgba(131,179,190,0.2);
+      margin-top: 6px;
+      margin-left: auto;
+      position: relative;
+      overflow: hidden;
     }
+
+    #temp-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: var(--blue);
+      width: 0%;
+      transition: width 3s ease;
+    }
+
+    #scroll-hint {
+      position: fixed;
+      bottom: 36px;
+      right: 36px;
+      font-family: 'Courier Prime', monospace;
+      font-size: 8px;
+      letter-spacing: 0.4em;
+      color: var(--blue);
+      opacity: 0;
+      text-transform: uppercase;
+      pointer-events: none;
+      z-index: 10;
+      transition: opacity 1s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     #scroll-hint::before {
-      content: ''; display: block; width: 20px; height: 1px;
+      content: '';
+      display: block;
+      width: 20px;
+      height: 1px;
       background: var(--blue);
       animation: scrollPulse 2s ease-in-out infinite;
     }
+
     @keyframes scrollPulse {
       0%,100% { opacity: 0.3; width: 12px; }
-      50%      { opacity: 1;   width: 24px; }
+      50%     { opacity: 1;   width: 24px; }
     }
 
-    /* ── Cards ── */
     #card-layer {
-      position: fixed; inset: 0; z-index: 20;
-      display: none; pointer-events: none;
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      pointer-events: none;
     }
+
     #card-layer.active { display: block; }
 
     .card {
-      position: absolute; inset: 0;
+      position: absolute;
+      inset: 0;
       display: none;
-      flex-direction: column; justify-content: flex-end;
+      flex-direction: column;
+      justify-content: flex-end;
       padding: 0 10vw 10vh 10vw;
-      opacity: 0; transform: translateY(24px);
-      transition: opacity 0.9s cubic-bezier(0.4,0,0.2,1),
-                  transform 0.9s cubic-bezier(0.4,0,0.2,1);
+      opacity: 0;
+      transform: translateY(24px);
+      transition:
+        opacity 0.9s cubic-bezier(0.4,0,0.2,1),
+        transform 0.9s cubic-bezier(0.4,0,0.2,1);
       pointer-events: none;
     }
+
     .card.visible { display: flex; }
-    .card.active  { opacity: 1; transform: translateY(0); pointer-events: auto; }
-    .card::after {
-      content: ''; position: absolute;
-      bottom: 0; left: 0; right: 0; height: 50%;
-      background: linear-gradient(to top, rgba(26,28,32,0.85) 0%, transparent 100%);
-      z-index: -1; pointer-events: none;
+
+    .card.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
     }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      background: linear-gradient(to top, rgba(26,28,32,0.85) 0%, transparent 100%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
     .card-index {
       font-family: 'Courier Prime', monospace;
-      font-size: 9px; letter-spacing: 0.5em;
-      color: var(--blue); opacity: 0.6;
-      text-transform: uppercase; margin-bottom: 20px;
+      font-size: 9px;
+      letter-spacing: 0.5em;
+      color: var(--blue);
+      opacity: 0.6;
+      text-transform: uppercase;
+      margin-bottom: 20px;
     }
+
     .card-title {
       font-size: clamp(26px, 4.2vw, 54px);
-      font-weight: 300; letter-spacing: 0.18em;
-      text-transform: uppercase; color: var(--white);
-      line-height: 1.1; margin-bottom: 24px;
+      font-weight: 300;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--white);
+      line-height: 1.1;
+      margin-bottom: 24px;
     }
-    .card-title em { font-style: italic; color: var(--blue); }
+
+    .card-title em {
+      font-style: italic;
+      color: var(--blue);
+    }
+
     .card.zh .card-title {
-      text-transform: none; letter-spacing: 0.12em;
+      text-transform: none;
+      letter-spacing: 0.12em;
       font-size: clamp(22px, 3.6vw, 46px);
     }
+
     .card-body {
       font-size: clamp(13px, 1.3vw, 17px);
-      font-weight: 300; line-height: 1.9;
-      letter-spacing: 0.04em; opacity: 0.72; max-width: 540px;
+      font-weight: 300;
+      line-height: 1.9;
+      letter-spacing: 0.04em;
+      opacity: 0.72;
+      max-width: 540px;
     }
+
     .card.zh .card-body { letter-spacing: 0.08em; }
 
-    /* ── Dots ── */
-    #dots {
-      position: fixed; right: 36px; top: 50%;
-      transform: translateY(-50%);
-      z-index: 30; display: none; flex-direction: column; gap: 12px;
-    }
-    #dots.active { display: flex; }
-    .dot {
-      width: 4px; height: 4px; border-radius: 50%;
-      background: var(--white); opacity: 0.2;
-      transition: all 0.4s; cursor: pointer;
-    }
-    .dot.on {
-      background: var(--blue); opacity: 1;
-      box-shadow: 0 0 10px var(--blue);
-      height: 16px; border-radius: 2px;
+    .card[data-index="6"] .card-title,
+    .card[data-index="7"] .card-title {
+      letter-spacing: 0.14em;
     }
 
-    /* ── Heat ring ── */
+    .card[data-index="6"]::before,
+    .card[data-index="7"]::before {
+      content: '';
+      position: absolute;
+      left: 10vw;
+      bottom: 9vh;
+      width: 180px;
+      height: 1px;
+      background: linear-gradient(to right, var(--blue), transparent);
+      opacity: 0.45;
+    }
+
+    .card[data-index="6"] .card-index,
+    .card[data-index="7"] .card-index {
+      color: var(--warm);
+      opacity: 0.75;
+    }
+
+    #dots {
+      position: fixed;
+      right: 36px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 30;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #dots.active { display: flex; }
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--white);
+      opacity: 0.2;
+      transition: all 0.4s;
+      cursor: pointer;
+    }
+
+    .dot.on {
+      background: var(--blue);
+      opacity: 1;
+      box-shadow: 0 0 10px var(--blue);
+      height: 16px;
+      border-radius: 2px;
+    }
+
     #heat-ring {
       position: fixed;
-      width: 300px; height: 300px; border-radius: 50%;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
       border: 1px solid rgba(131,179,190,0);
-      left: 50%; top: 50%; transform: translate(-50%,-50%);
-      pointer-events: none; z-index: 5;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      pointer-events: none;
+      z-index: 5;
       transition: border-color 0.3s, box-shadow 0.3s;
     }
 
     @media (max-width: 768px) {
-      #label-tl    { top: 20px; left: 20px; font-size: 8px; }
-      #label-bl    { bottom: 20px; left: 20px; }
-      .card        { padding: 0 6vw 16vh 6vw; }
-      #dots        { right: 16px; }
+      #label-tl { top: 20px; left: 20px; font-size: 8px; }
+      #label-bl { bottom: 20px; left: 20px; }
+      .card { padding: 0 6vw 16vh 6vw; }
+      #dots { right: 16px; }
       #scroll-hint { right: 16px; bottom: 20px; }
-      #temp-gauge  { right: 16px; top: 20px; }
+      #temp-gauge { right: 16px; top: 20px; }
       #lang-toggle { top: 20px; }
-      #heat-ring   { width: 200px; height: 200px; }
+      #heat-ring { width: 200px; height: 200px; }
     }
   </style>
 </head>
+
 <body>
 
   <div id="cursor"></div>
@@ -278,83 +450,121 @@
   </div>
 
   <div id="card-layer">
-    <!-- EN -->
     <div class="card en visible active" data-index="0">
       <div class="card-index">00 — Definition</div>
       <h2 class="card-title">Time,<br><em>Revealed</em> —<br>Not Counted.</h2>
       <p class="card-body">A self-consuming body that transforms duration into a visible process of emergence. Scroll to enter.</p>
     </div>
+
     <div class="card en" data-index="1">
       <div class="card-index">01 — Mechanism</div>
       <h2 class="card-title">What Remains<br>Becomes <em>Visible</em></h2>
       <p class="card-body">As the outer wax melts, a stable inner core begins to surface. You are not watching time disappear. You are watching what survives.</p>
     </div>
+
     <div class="card en" data-index="2">
       <div class="card-index">02 — Structure</div>
       <h2 class="card-title">No Vessel.<br><em>Structural</em><br>Sovereignty.</h2>
       <p class="card-body">This is not a candle inside a container. The body itself is the boundary. It bears time directly — no mediation, no protection.</p>
     </div>
+
     <div class="card en" data-index="3">
       <div class="card-index">03 — Contract</div>
       <h2 class="card-title">Heat Is<br>the <em>Filter</em></h2>
       <p class="card-body">Heat, duration, and attention converge. What emerges is not decoration. It is evidence of presence.</p>
     </div>
+
     <div class="card en" data-index="4">
       <div class="card-index">04 — Moment</div>
       <h2 class="card-title">When Time<br>Becomes <em>Abstract</em></h2>
       <p class="card-body">Late-night study. Exam week. Sustained focus. Moments when the clock disappears and attention needs a body to hold onto.</p>
     </div>
+
     <div class="card en" data-index="5">
       <div class="card-index">05 — Portal</div>
       <h2 class="card-title">Before<br><em>Touch</em>,<br>Perception.</h2>
       <p class="card-body">This site is a digital echo of the physical process. Alignment before acquisition. The object has already begun its work.</p>
     </div>
 
-    <!-- ZH -->
+    <div class="card en" data-index="6">
+      <div class="card-index">06 — Reveal Research</div>
+      <h2 class="card-title">Temporal Object<br><em>Development</em><br>Archive.</h2>
+      <p class="card-body">The object was never designed to disappear. The shell exists to surrender. The core exists to remain.</p>
+    </div>
+
+    <div class="card en" data-index="7">
+      <div class="card-index">07 — Melt Sequence</div>
+      <h2 class="card-title">Sealed Shell.<br>Surface Yielding.<br><em>Core Exposure.</em></h2>
+      <p class="card-body">This archive studies how wax, heat, time, and attention produce visible emotional evidence.</p>
+    </div>
+
     <div class="card zh" data-index="0">
       <div class="card-index">00 — 定义</div>
       <h2 class="card-title">时间，被<em>揭示</em>——<br>而非被计数。</h2>
       <p class="card-body">一个自我消耗的身体，将时间的流逝转化为可见的显现过程。向下滚动，进入。</p>
     </div>
+
     <div class="card zh" data-index="1">
       <div class="card-index">01 — 机制</div>
       <h2 class="card-title">留下的，<br>开始<em>显现</em>。</h2>
       <p class="card-body">外层蜡质融化，稳定的内芯逐渐浮现。你不是在看时间消失。你是在看，什么东西活了下来。</p>
     </div>
+
     <div class="card zh" data-index="2">
       <div class="card-index">02 — 结构</div>
       <h2 class="card-title">没有容器。<br><em>结构本身</em>即主权。</h2>
       <p class="card-body">这不是一根被放进容器里的蜡烛。身体本身就是边界。它直接承载时间——没有中介，没有保护。</p>
     </div>
+
     <div class="card zh" data-index="3">
       <div class="card-index">03 — 契约</div>
       <h2 class="card-title">热度是<br><em>过滤器</em>。</h2>
       <p class="card-body">热度、时长与注意力汇聚于此。显现出来的不是装饰。那是存在的证据。</p>
     </div>
+
     <div class="card zh" data-index="4">
       <div class="card-index">04 — 时刻</div>
       <h2 class="card-title">当时间变得<br><em>抽象</em>。</h2>
       <p class="card-body">深夜自习。考试周。持续专注。时钟消失的时刻，注意力需要一个可以抓住的身体。</p>
     </div>
+
     <div class="card zh" data-index="5">
       <div class="card-index">05 — 入口</div>
       <h2 class="card-title">在<em>触碰</em>之前，<br>先感知。</h2>
       <p class="card-body">这个网站是物理过程的数字回响。在获得之前先对齐。这个物体已经开始工作了。</p>
     </div>
+
+    <div class="card zh" data-index="6">
+      <div class="card-index">06 — 显影研究</div>
+      <h2 class="card-title">时间物体<br><em>研发档案</em>。</h2>
+      <p class="card-body">这个物体从来不是为了消失而被设计的。外层存在，是为了让渡。内核存在，是为了留下。</p>
+    </div>
+
+    <div class="card zh" data-index="7">
+      <div class="card-index">07 — 融化序列</div>
+      <h2 class="card-title">封闭外壳。<br>表面让渡。<br><em>内核显影。</em></h2>
+      <p class="card-body">这个档案研究蜡、热量、时间与注意力如何共同生成可见的情感证据。</p>
+    </div>
   </div>
 
   <div id="label-tl">Astro Time Candle</div>
   <div id="label-bl">Wei Jueran · Philadelphia · 14.0°C</div>
+
   <div id="temp-gauge">
     <span id="temp-val">14.0°C</span>
     <div id="temp-bar"><div id="temp-fill"></div></div>
   </div>
+
   <div id="scroll-hint">Scroll</div>
   <div id="dots"></div>
   <div id="heat-ring"></div>
 
   <script type="importmap">
-  { "imports": { "three": "https://unpkg.com/three@0.161.0/build/three.module.js" } }
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.161.0/build/three.module.js"
+    }
+  }
   </script>
 
   <script type="module">
@@ -384,32 +594,39 @@
     let currentLang = 'en';
     let audioCtx, analyser, dataArray, audioReady = false;
 
-    // ── Cursor ────────────────────────────────────────────────
-    let mx=0,my=0,rx=0,ry=0;
+    const MAX_INDEX = 7;
+
+    let mx=0, my=0, rx=0, ry=0;
+
     window.addEventListener('mousemove', e => {
       mx=e.clientX; my=e.clientY;
       cursorDot.style.transform=`translate(${mx}px,${my}px) translate(-50%,-50%)`;
     });
+
     (function ring(){
-      rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
+      rx+=(mx-rx)*0.12;
+      ry+=(my-ry)*0.12;
       cursorRing.style.transform=`translate(${rx}px,${ry}px) translate(-50%,-50%)`;
       requestAnimationFrame(ring);
     })();
 
-    // ── Cards ─────────────────────────────────────────────────
     function showCard(n) {
-      currentIdx = Math.max(0, Math.min(5, n));
+      currentIdx = Math.max(0, Math.min(MAX_INDEX, n));
+
       document.querySelectorAll('.card').forEach(c => {
         c.classList.remove('visible','active');
       });
+
       const target = document.querySelector(
         `.card.${currentLang}[data-index="${currentIdx}"]`
       );
+
       if (target) {
         target.classList.add('visible');
         void target.offsetWidth;
         target.classList.add('active');
       }
+
       dots.forEach((d,i) => d.classList.toggle('on', i===currentIdx));
     }
 
@@ -419,19 +636,20 @@
       scrollHint.innerText = lang==='zh' ? '滚动' : 'Scroll';
       showCard(currentIdx);
     }
+
     langBtns.forEach(b => b.addEventListener('click', () => switchLang(b.dataset.lang)));
 
-    // ── Dots ──────────────────────────────────────────────────
-    for (let i=0;i<6;i++){
+    for (let i=0; i<=MAX_INDEX; i++){
       const d=document.createElement('div');
       d.className='dot'+(i===0?' on':'');
       d.addEventListener('click',()=>showCard(i));
       dotsWrap.appendChild(d);
     }
+
     const dots=[...document.querySelectorAll('.dot')];
 
     function revealCards(){
-      if(cardsShown)return;
+      if(cardsShown) return;
       cardsShown=true;
       cardLayer.classList.add('active');
       dotsWrap.classList.add('active');
@@ -441,50 +659,69 @@
       showCard(0);
     }
 
-    // ── Wheel ─────────────────────────────────────────────────
     let wheelAccum=0, wheelCooldown=false;
-    const THRESHOLD=120, COOLDOWN=800;
+    const THRESHOLD=120;
+    const COOLDOWN=800;
 
     window.addEventListener('wheel', e => {
-      if(!isStarted)return;
+      if(!isStarted) return;
       e.preventDefault();
-      if(Date.now()-enterTime<2000)return;
-      if(wheelCooldown){ wheelAccum=0; return; }
+
+      if(Date.now()-enterTime<2000) return;
+
+      if(wheelCooldown){
+        wheelAccum=0;
+        return;
+      }
+
       wheelAccum+=e.deltaY;
+
       if(Math.abs(wheelAccum)>=THRESHOLD){
         const dir=wheelAccum>0?1:-1;
-        wheelAccum=0; wheelCooldown=true;
-        setTimeout(()=>{ wheelCooldown=false; },COOLDOWN);
-        if(!cardsShown){ revealCards(); }
-        else { showCard(currentIdx+dir); }
-      }
-    },{ passive:false });
+        wheelAccum=0;
+        wheelCooldown=true;
 
-    // ── Touch ─────────────────────────────────────────────────
+        setTimeout(()=>{ wheelCooldown=false; },COOLDOWN);
+
+        if(!cardsShown){
+          revealCards();
+        } else {
+          showCard(currentIdx+dir);
+        }
+      }
+    }, { passive:false });
+
     let touchStartY=0, touchStartTime=0;
+
     window.addEventListener('touchstart', e => {
-      if(!isStarted)return;
+      if(!isStarted) return;
       touchStartY=e.touches[0].clientY;
       touchStartTime=Date.now();
-    },{ passive:true });
+    }, { passive:true });
+
     window.addEventListener('touchend', e => {
-      if(!isStarted)return;
-      if(Date.now()-enterTime<1000)return;
+      if(!isStarted) return;
+      if(Date.now()-enterTime<1000) return;
+
       const dy=touchStartY-e.changedTouches[0].clientY;
       const dt=Date.now()-touchStartTime;
-      if(Math.abs(dy)<40||dt>400)return;
-      const dir=dy>0?1:-1;
-      if(!cardsShown){ revealCards(); }
-      else { showCard(currentIdx+dir); }
-    },{ passive:true });
 
-    // ── THREE ─────────────────────────────────────────────────
+      if(Math.abs(dy)<40 || dt>400) return;
+
+      const dir=dy>0?1:-1;
+
+      if(!cardsShown){
+        revealCards();
+      } else {
+        showCard(currentIdx+dir);
+      }
+    }, { passive:true });
+
     let scene,camera,renderer,shell,core,particles;
 
     function initVisuals(){
       scene=new THREE.Scene();
 
-      // Camera pulled back so candle fits screen properly
       camera=new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 1000);
       camera.position.z=22;
 
@@ -497,29 +734,41 @@
 
       core=new THREE.Mesh(
         new THREE.CylinderGeometry(0.9,0.9,6,32),
-        new THREE.MeshStandardMaterial({color:0x4A5B61,metalness:0.95,roughness:0.05})
+        new THREE.MeshStandardMaterial({
+          color:0x4A5B61,
+          metalness:0.95,
+          roughness:0.05
+        })
       );
 
       shell=new THREE.Mesh(
         new THREE.CylinderGeometry(2.2,2.2,7,64),
         new THREE.MeshPhysicalMaterial({
-          color:0x83B3BE, transmission:0.82, roughness:0.12, thickness:4,
-          transparent:true, opacity:0.88,
-          emissive:0x83B3BE, emissiveIntensity:0.08
+          color:0x83B3BE,
+          transmission:0.82,
+          roughness:0.12,
+          thickness:4,
+          transparent:true,
+          opacity:0.88,
+          emissive:0x83B3BE,
+          emissiveIntensity:0.08
         })
       );
 
       group.add(core,shell);
-      group.position.set(0,0,0); // explicitly centered
+      group.position.set(0,0,0);
       scene.add(group);
 
       const rim=new THREE.PointLight(0x83B3BE,1.8,80);
-      rim.position.set(4,6,10); scene.add(rim);
+      rim.position.set(4,6,10);
+      scene.add(rim);
+
       const fill=new THREE.PointLight(0xD9C5B2,0.6,50);
-      fill.position.set(-5,-2,6); scene.add(fill);
+      fill.position.set(-5,-2,6);
+      scene.add(fill);
+
       scene.add(new THREE.AmbientLight(0x83B3BE,0.25));
 
-      // Particles
       const pc=document.createElement('canvas');
       pc.width=pc.height=64;
       const pctx=pc.getContext('2d');
@@ -527,82 +776,111 @@
       g.addColorStop(0,'rgba(242,242,242,1)');
       g.addColorStop(0.3,'rgba(131,179,190,0.5)');
       g.addColorStop(1,'rgba(26,28,32,0)');
-      pctx.fillStyle=g; pctx.fillRect(0,0,64,64);
+      pctx.fillStyle=g;
+      pctx.fillRect(0,0,64,64);
 
       const geo=new THREE.BufferGeometry();
       const pos=new Float32Array(8000*3);
       for(let i=0;i<pos.length;i++) pos[i]=(Math.random()-0.5)*80;
       geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+
       particles=new THREE.Points(geo,new THREE.PointsMaterial({
-        size:0.5, map:new THREE.CanvasTexture(pc),
-        transparent:true, opacity:0.5,
-        blending:THREE.AdditiveBlending, depthWrite:false, sizeAttenuation:true
+        size:0.5,
+        map:new THREE.CanvasTexture(pc),
+        transparent:true,
+        opacity:0.5,
+        blending:THREE.AdditiveBlending,
+        depthWrite:false,
+        sizeAttenuation:true
       }));
+
       scene.add(particles);
       renderLoop();
     }
 
     function renderLoop(){
       requestAnimationFrame(renderLoop);
+
       const t=Date.now()*0.001;
+
       shell.rotation.y+=0.00724;
       core.rotation.y-=0.003;
       particles.rotation.y+=0.00025;
       particles.rotation.x=Math.sin(t*0.08)*0.04;
+
       const b=1+Math.sin(t*0.6)*0.007;
       shell.scale.set(b,1,b);
 
-      if(isStarted&&analyser){
+      if(isStarted && analyser){
         analyser.getByteFrequencyData(dataArray);
+
         let sum=0;
         for(let i=0;i<dataArray.length;i++) sum+=dataArray[i];
+
         const freq=sum/dataArray.length;
         shell.material.emissiveIntensity=0.08+freq/70;
+
         const ro=Math.min(freq/60,0.6);
         heatRing.style.borderColor=`rgba(131,179,190,${ro})`;
         heatRing.style.boxShadow=`0 0 ${20+freq}px rgba(131,179,190,${ro*0.4})`;
       }
+
       renderer.render(scene,camera);
     }
 
-    // ── Audio ─────────────────────────────────────────────────
     function setupAudio(){
-      if(audioReady)return;
+      if(audioReady) return;
+
       const AC=window.AudioContext||window.webkitAudioContext;
       audioCtx=new AC();
+
       const src=audioCtx.createMediaElementSource(bgAudio);
       analyser=audioCtx.createAnalyser();
       const gain=audioCtx.createGain();
+
       analyser.fftSize=64;
       analyser.smoothingTimeConstant=0.85;
       gain.gain.value=2.0;
+
       dataArray=new Uint8Array(analyser.frequencyBinCount);
-      src.connect(gain); gain.connect(analyser); analyser.connect(audioCtx.destination);
+
+      src.connect(gain);
+      gain.connect(analyser);
+      analyser.connect(audioCtx.destination);
+
       audioReady=true;
     }
 
-    // ── Enter ─────────────────────────────────────────────────
     async function startExperience(){
-      if(isStarted)return;
+      if(isStarted) return;
+
       isStarted=true;
       enterTime=Date.now();
+
       try{
         setupAudio();
+
         if(audioCtx.state==='suspended') await audioCtx.resume();
+
         bgAudio.volume=1.0;
         await bgAudio.play();
-      }catch(e){ console.warn('Audio blocked',e); }
+      }catch(e){
+        console.warn('Audio blocked',e);
+      }
 
       entry.style.opacity='0';
+
       setTimeout(()=>{
         entry.style.display='none';
         tempGauge.style.opacity='0.6';
         tempFill.style.width='72%';
+
         let t=0;
         setInterval(()=>{
           t+=0.08;
           tempVal.innerText=(14.0+Math.sin(t)*0.3).toFixed(1)+'°C';
         },200);
+
         setTimeout(()=>{
           scrollHint.style.opacity='0.55';
           setTimeout(()=>{ scrollHint.style.opacity='0.2'; },2800);
@@ -615,12 +893,14 @@
       statusEl.style.color='rgba(131,179,190,0.8)';
       statusEl.style.opacity='0.8';
     });
+
     bgAudio.addEventListener('error',()=>{
       statusEl.innerText='Audio load error.';
       statusEl.style.color='#FF6B6B';
     });
 
     enterBtn.addEventListener('click',startExperience);
+
     window.addEventListener('resize',()=>{
       camera.aspect=innerWidth/innerHeight;
       camera.updateProjectionMatrix();
